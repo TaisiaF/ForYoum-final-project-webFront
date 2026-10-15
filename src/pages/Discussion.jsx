@@ -10,6 +10,7 @@ import ReplyCard from "../components/ReplyCard";
 import DiscussionActions from "../components/DiscussionActions";
 import DiscussionEditForm from "../components/DiscussionEditForm";
 import ReplyComposer from "../components/ReplyComposer";
+import ProfilePicture from "../components/ProfilePicture";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -277,6 +278,40 @@ export default function Discussion() {
 
     return (
         <div>
+            
+            <div 
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <ProfilePicture
+                    src={discussion.authorId?.profilePicture}
+                    alt={`${discussion.authorId?.username || "Author"}'s profile picture`}
+                    size={40}
+            />
+
+                <p>
+                    Author:{" "}
+                    {discussion.authorId?._id ? (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                navigate(`/profile/${discussion.authorId._id}`)
+                            }
+                            style={{
+                                background: "none",
+                                border: "none",
+                                padding: 0,
+                                color: "blue",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                                font: "inherit"
+                            }}
+                        >
+                            {discussion.authorId.username}
+                        </button>
+                    ) : (
+                        "Unknown user"
+                    )}
+                </p>
+            </div>
 
             {isEditing ? (
                 <DiscussionEditForm
@@ -290,11 +325,27 @@ export default function Discussion() {
                     onCancel={() => setIsEditing(false)}
                 />
 
-            ) : (
+            ) : (               
                 <>
                     <h1>
                         {discussion.title}
                     </h1>
+
+                    {discussion.image && (
+                        <img
+                            src={discussion.image}
+                            alt={`Image attached to ${discussion.title}`}
+                            style={{
+                                display: "block",
+                                maxWidth: "100%",
+                                maxHeight: "600px",
+                                width: "auto",
+                                height: "auto",
+                                objectFit: "contain",
+                                margin: "16px 0"
+                            }}
+                        />
+                    )}
 
                     <p>
                         {discussion.content}
@@ -306,9 +357,6 @@ export default function Discussion() {
                 Category: {discussion.category}
             </p>
 
-            <p>
-                Author: {discussion.authorId.username}
-            </p>
 
             <p>
                 Date:{" "}

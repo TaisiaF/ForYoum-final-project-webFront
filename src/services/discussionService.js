@@ -1,6 +1,26 @@
 import api from "./api";
 
 
+const createDiscussion = async ({ title, content, category, image }) => {
+    const formData = new FormData();
+
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("category", category);
+
+    if (image) {
+        formData.append("image", image);
+    }
+
+    const response = await api.post(
+        "/discussions",
+        formData
+    );
+
+    return response.data;
+};
+
+
 const getDiscussions = async ({
     page = 1,
     limit = 10,
@@ -39,6 +59,7 @@ const getDiscussionById = async (id) => {
     return response.data;
 };
 
+
 const updateDiscussion = async (id, data) => {
     const response = await api.patch(
         `/discussions/${id}`,
@@ -76,6 +97,7 @@ const unlikeDiscussion = async (id) => {
 
 
 export default {
+    createDiscussion,
     getDiscussions,
     getDiscussionById,
     updateDiscussion,

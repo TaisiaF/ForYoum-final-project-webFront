@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Input from "../components/Input";
 import Button from "../components/Button";
@@ -10,6 +11,8 @@ import { useAuth } from "../context/AuthContext";
 
 
 export default function Home() {
+
+    const navigate = useNavigate();
 
     const { user, logout } = useAuth();
 
@@ -92,7 +95,24 @@ export default function Home() {
     return (
         <div>
 
-            <h1>ForYoum</h1>
+            <h1>ForYoum -Home</h1>
+            
+            {user && (
+                <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+
+                    <Button
+                        onClick={() => navigate(`/profile/${user.id}`)}
+                    >
+                        My Profile
+                    </Button>
+
+                    <Button
+                        onClick={() => navigate("/discussion/create")}
+                    >
+                        Create Discussion
+                    </Button>
+                </div>
+            )}
 
             <Input
                 label="Search"

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 import replyService from "../services/replyService";
 import ReplyComposer from "./ReplyComposer";
+import ProfilePicture from "./ProfilePicture";
 
 export default function ReplyCard({
     reply,
@@ -62,6 +63,7 @@ export default function ReplyCard({
         }
     };
 
+
     return (
         <div
             style={{
@@ -69,9 +71,45 @@ export default function ReplyCard({
                     `${reply.level * 30}px`
             }}
         >
-            <p>
-                {reply.authorId.username}
-            </p>
+
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px"
+                }}
+            >
+                <ProfilePicture
+                    src={reply.authorId?.profilePicture}
+                    alt={`${reply.authorId?.username || "User"}'s profile picture`}
+                    size={40}
+                />
+                
+                <p>
+                    {reply.authorId?._id ? (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                navigate(`/profile/${reply.authorId._id}`)
+                            }
+                            style={{
+                                background: "none",
+                                border: "none",
+                                padding: 0,
+                                color: "blue",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                                font: "inherit"
+                            }}
+                        >
+                            {reply.authorId.username}
+                        </button>
+                    ) : (
+                        "Unknown user"
+                    )}
+                </p>
+            </div>
+
 
             {isEditing ? (
                 <div>
@@ -124,6 +162,7 @@ export default function ReplyCard({
                 </p>
             )}
 
+
             <p>
                 {new Date(
                     reply.createdAt
@@ -145,6 +184,7 @@ export default function ReplyCard({
             >
                 Like
             </button>
+
 
             {user &&
                 (user.id === reply.authorId._id ||
@@ -191,6 +231,7 @@ export default function ReplyCard({
                         </button>
                     </>
                 )}
+
 
             {isReplying && (
                 <ReplyComposer

@@ -7,11 +7,6 @@ export default function Navbar() {
 
     return (
         <nav>
-
-            <Link to="/">
-                ForYoum
-            </Link>
-
             <div>
 
                 <Link to="/">
@@ -21,7 +16,7 @@ export default function Navbar() {
                 {user ? (
                     <>
                         <span>
-                            {user.username}
+                            hello {user.username}
                         </span>
 
                         <button onClick={logout}>
