@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import userService from "../services/userService";
 import DiscussionCard from "../components/DiscussionCard";
@@ -9,12 +9,14 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Profile() {
     const { id } = useParams();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
     const [profile, setProfile] = useState(null);
     const [discussions, setDiscussions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [banLoading, setBanLoading] = useState(false);
 
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
@@ -61,6 +63,89 @@ export default function Profile() {
             event.target.value = "";
         }
     };
+
+
+    const handleToggleBan = async () => {
+        if (!profile || user?.role !== "admin" || user?.id === profile._id) {
+            return;
+        }
+
+        try {
+            setBanLoading(true);
+            setError("");
+
+            if (profile.banned) {
+                await userService.unbanUser(profile._id);
+                setProfile(previous => ({
+                    ...previous,
+                    banned: false
+                }));
+            } else {
+                await userService.banUser(profile._id);
+                setProfile(previous => ({
+                    ...previous,
+                    banned: true
+                }));
+            }
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to update user's ban status."
+            );
+        } finally {
+            setBanLoading(false);
+        }
+    };
+
+
+    const handleDeleteUser = async () => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete ${profile.username}?\n\nThis action cannot be undone.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setError("");
+
+            await userService.deleteUserById(profile._id);
+
+            navigate("/");
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to delete user."
+            );
+        }
+    };
+
+
+    const handleDeleteMyAccount = async () => {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete your account?\n\nThis action cannot be undone."
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setError("");
+
+            await userService.deleteMyAccount();
+
+            logout();
+            navigate("/");
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to delete your account."
+            );
+        }
+    };
+
 
 
     useEffect(() => {
@@ -128,6 +213,44 @@ export default function Profile() {
 
                 <h1>{profile.username}</h1>
                 <p>Role: {profile.role}</p>
+
+                {user?.role === "admin" && user?.id !== profile._id && (
+                    <div>
+                        <p>
+                            Status: {profile.banned ? "Banned" : "Active"}
+                        </p>
+
+                        <button
+                            onClick={handleToggleBan}
+                            disabled={banLoading}
+                        >
+                            {banLoading
+                                ? "Please wait..."
+                                : profile.banned
+                                    ? "Unban User"
+                                    : "Ban User"}
+                        </button>
+                    </div>
+                )}
+
+                {user?.id === profile._id && (
+                    <button onClick={() => navigate("/account-settings")}>
+                        Account Settings
+                    </button>
+                )}
+
+                {user?.role === "admin" &&
+                    user?.id !== profile._id && (
+                        <button onClick={handleDeleteUser}>
+                            Delete User
+                        </button>
+                )}
+
+                {user?.id === profile._id && (
+                    <button onClick={handleDeleteMyAccount}>
+                        Delete My Account
+                    </button>
+                )}
 
                 {user?.id === profile._id && (
                     <>

@@ -7,7 +7,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Verify from "./pages/Verify";
 import Profile from "./pages/Profile";
+import AccountSettings from "./pages/AccountSettings";
 import CreateDiscussion from "./pages/CreateDiscussion";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
     return (
@@ -21,6 +23,7 @@ function App() {
                 <Route path="/auth/verify" element={<Verify />} />
                 <Route path="/discussion/:id" element={<Discussion />} />
                 <Route path="/profile/:id" element={<Profile />} />
+                <Route path="/account-settings"element={<ProtectedRoute> <AccountSettings /> </ProtectedRoute>} />
             </Routes>
         </BrowserRouter>
     );

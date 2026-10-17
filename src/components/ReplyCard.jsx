@@ -186,9 +186,7 @@ export default function ReplyCard({
             </button>
 
 
-            {user &&
-                (user.id === reply.authorId._id ||
-                    user.role === "admin") && (
+            {user && (user.id === reply.authorId?._id || user.role === "admin") && (
                     <>
                         <button
                             onClick={() => {
@@ -229,8 +227,8 @@ export default function ReplyCard({
                         >
                             Delete
                         </button>
-                    </>
-                )}
+                    </>)
+            }
 
 
             {isReplying && (
