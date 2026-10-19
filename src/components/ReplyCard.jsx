@@ -6,6 +6,7 @@ import replyService from "../services/replyService";
 import ReplyComposer from "./ReplyComposer";
 import ProfilePicture from "./ProfilePicture";
 
+
 export default function ReplyCard({
     reply,
     onLike,
@@ -67,8 +68,8 @@ export default function ReplyCard({
     return (
         <div
             style={{
-                marginLeft:
-                    `${reply.level * 30}px`
+                position: "relative",
+                paddingBottom: "0"
             }}
         >
 

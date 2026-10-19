@@ -4,13 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import discussionService from "../services/discussionService";
 import replyService from "../services/replyService";
 
-import flattenReplies from "../utils/flattenReplies";
-
-import ReplyCard from "../components/ReplyCard";
 import DiscussionActions from "../components/DiscussionActions";
 import DiscussionEditForm from "../components/DiscussionEditForm";
 import ReplyComposer from "../components/ReplyComposer";
 import ProfilePicture from "../components/ProfilePicture";
+import ReplyThread from "../components/ReplyThread";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -23,38 +21,29 @@ export default function Discussion() {
 
     const navigate = useNavigate();
 
-    const [discussion, setDiscussion] =
-        useState(null);
+    const [discussion, setDiscussion] = useState(null);
 
-    const [isEditing, setIsEditing] =
-    useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
-    const [editTitle, setEditTitle] =
-        useState("");
+    const [editTitle, setEditTitle] = useState("");
 
-    const [editContent, setEditContent] =
-        useState("");
+    const [editContent, setEditContent] = useState("");
 
-    const [editCategory, setEditCategory] =
-    useState("");
+    const [editCategory, setEditCategory] = useState("");
 
-    const [replies, setReplies] =
-        useState([]);
+    const [replies, setReplies] = useState([]);
 
     const [replyContent, setReplyContent] = useState("");
 
-    const [loading, setLoading] =
-        useState(true);
+    const [loading, setLoading] = useState(true);
 
 
     const loadReplies = async () => {
         const repliesResponse =
             await replyService.getRepliesByDiscussion(id);
 
-        setReplies(
-            flattenReplies(repliesResponse)
-        );
-    };
+        setReplies(repliesResponse);
+    };;
 
 
     const handleLikeDiscussion = async () => {
@@ -273,7 +262,7 @@ export default function Discussion() {
         return <p>Discussion not found.</p>;
     }
 
-    
+
 
 
     return (
@@ -389,15 +378,12 @@ export default function Discussion() {
                 Replies
             </h2>
 
-            {replies.map((reply) => (
-                <ReplyCard
-                    key={reply._id}
-                    reply={reply}
-                    onLike={handleLikeReply}
-                    onUpdate={handleUpdateReply}
-                    onCreateReply={handleCreateReply}
-                />
-            ))}
+            <ReplyThread
+                replies={replies}
+                onLike={handleLikeReply}
+                onUpdate={handleUpdateReply}
+                onCreateReply={handleCreateReply}
+            />
 
         </div>
     );

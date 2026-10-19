@@ -1,31 +1,37 @@
+
 export default function flattenReplies(
     replies,
-    level = 0
+    level = 0,
+    parentReplyId = null,
+    ancestorLastChild = []
 ) {
-
     let result = [];
 
-    replies.forEach(reply => {
-
+    replies.forEach((reply, index) => {
         const {
-            children,
+            children = [],
             ...replyWithoutChildren
         } = reply;
 
+        const isLastChild =
+            index === replies.length - 1;
+
         result.push({
             ...replyWithoutChildren,
-            level
+            level,
+            parentReplyId:
+                reply.parentId || parentReplyId,
+            isLastChild,
+            ancestorLastChild
         });
 
-        if (
-            reply.children &&
-            reply.children.length > 0
-        ) {
-
+        if (children.length > 0) {
             result = result.concat(
                 flattenReplies(
                     children,
-                    level + 1
+                    level + 1,
+                    reply._id,
+                    [...ancestorLastChild, isLastChild]
                 )
             );
         }
