@@ -1,215 +1,386 @@
-import { useState } from "react";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import userService from "../services/userService";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react"; import Input from "../components/Input"; import Button from "../components/Button"; import userService from "../services/userService"; import { useAuth } from "../context/AuthContext";
 
-export default function AccountSettings() {
-    const { user, login, token } = useAuth();
+export default function AccountSettings() { const { user, login, token } = useAuth();
 
-    const [username, setUsername] = useState(user?.username || "");
-    const [email, setEmail] = useState(user?.email || "");
-    const [emailPassword, setEmailPassword] = useState("");
-    const [oldPassword, setOldPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+const [username, setUsername] = useState(user?.username || "");
+const [email, setEmail] = useState(user?.email || "");
+const [emailPassword, setEmailPassword] = useState("");
+const [oldPassword, setOldPassword] = useState("");
+const [newPassword, setNewPassword] = useState("");
+const [confirmPassword, setConfirmPassword] = useState("");
 
-    const [loading, setLoading] = useState("");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
+const [usernameError, setUsernameError] = useState("");
+const [emailError, setEmailError] = useState("");
+const [emailPasswordError, setEmailPasswordError] = useState("");
+const [oldPasswordError, setOldPasswordError] = useState("");
+const [newPasswordError, setNewPasswordError] = useState("");
+const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
-    const showResult = (text, isError = false) => {
-        setMessage(isError ? "" : text);
-        setError(isError ? text : "");
-    };
+const [loading, setLoading] = useState("");
+const [message, setMessage] = useState("");
+const [error, setError] = useState("");
 
-    const handleUsernameSubmit = async (event) => {
-        event.preventDefault();
-        showResult("");
+const showResult = (text, isError = false) => {
+    setMessage(isError ? "" : text);
+    setError(isError ? text : "");
+};
 
-        const trimmedUsername = username.trim();
+const clearResult = () => {
+    setMessage("");
+    setError("");
+};
 
-        if (trimmedUsername.length < 2) {
-            showResult("Username must be at least 2 characters.", true);
-            return;
-        }
+const validateUsername = (value) => {
+    if (value.trim().length < 3) {
+        return "Username must be at least 3 characters.";
+    }
 
-        if (trimmedUsername === user?.username) {
-            showResult("Your username hasn't changed.", true);
-            return;
-        }
+    return "";
+};
 
-        try {
-            setLoading("username");
-            await userService.updateUsername(trimmedUsername);
+const validateEmail = (value) => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+        return "Please enter a valid email address.";
+    }
 
-            const updatedUser = { ...user, username: trimmedUsername };
-            login(token, updatedUser);
-            showResult("Username updated successfully.");
-        } catch (err) {
-            showResult(
-                err.response?.data?.message || "Failed to update username.",
-                true
-            );
-        } finally {
-            setLoading("");
-        }
-    };
+    return "";
+};
 
-    const handleEmailSubmit = async (event) => {
-        event.preventDefault();
-        showResult("");
+const validateEmailPassword = (value) => {
+    if (!value) {
+        return "Enter your current password to change your email.";
+    }
 
-        const trimmedEmail = email.trim().toLowerCase();
+    return "";
+};
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-            showResult("Please enter a valid email address.", true);
-            return;
-        }
+const validateNewPassword = (value) => {
+    if (value.length < 8) {
+        return "Password must be at least 8 characters.";
+    }
 
-        if (trimmedEmail === user?.email?.toLowerCase()) {
-            showResult("Your email hasn't changed.", true);
-            return;
-        }
+    if (!/[A-Z]/.test(value)) {
+        return "Password must contain at least one uppercase letter.";
+    }
 
-        if (!emailPassword) {
-            showResult("Enter your current password to change your email.", true);
-            return;
-        }
+    if (!/[a-z]/.test(value)) {
+        return "Password must contain at least one lowercase letter.";
+    }
 
-        try {
-            setLoading("email");
-            await userService.updateEmail(trimmedEmail, emailPassword);
+    if (!/[^A-Za-z0-9]/.test(value)) {
+        return "Password must contain at least one special character.";
+    }
 
-            const updatedUser = { ...user, email: trimmedEmail };
-            login(token, updatedUser);
-            setEmailPassword("");
-            showResult("Email updated successfully.");
-        } catch (err) {
-            showResult(
-                err.response?.data?.message || "Failed to update email.",
-                true
-            );
-        } finally {
-            setLoading("");
-        }
-    };
+    return "";
+};
 
-    const handlePasswordSubmit = async (event) => {
-        event.preventDefault();
-        showResult("");
+const validateOldPassword = (value) => {
+    if (!value) {
+        return "Please enter your current password.";
+    }
 
-        if (!oldPassword || !newPassword || !confirmPassword) {
-            showResult("Please fill in all password fields.", true);
-            return;
-        }
+    return "";
+};
 
-        if (newPassword.length < 8) {
-            showResult("Your new password must be at least 8 characters.", true);
-            return;
-        }
+const validateConfirmPassword = (
+    value,
+    originalPassword = newPassword
+) => {
+    if (!value) {
+        return "Please confirm your new password.";
+    }
 
-        if (newPassword !== confirmPassword) {
-            showResult("The new passwords do not match.", true);
-            return;
-        }
+    if (value !== originalPassword) {
+        return "The new passwords do not match.";
+    }
 
-        if (oldPassword === newPassword) {
-            showResult("Your new password must differ from your current password.", true);
-            return;
-        }
+    return "";
+};
 
-        try {
-            setLoading("password");
-            await userService.updatePassword(oldPassword, newPassword);
+const handleUsernameSubmit = async (event) => {
+    event.preventDefault();
+    clearResult();
 
-            setOldPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-            showResult("Password updated successfully.");
-        } catch (err) {
-            showResult(
-                err.response?.data?.message || "Failed to update password.",
-                true
-            );
-        } finally {
-            setLoading("");
-        }
-    };
+    const trimmedUsername = username.trim();
+    const validation = validateUsername(trimmedUsername);
 
-    return (
-        <div>
-            <h1>Account Settings</h1>
+    setUsernameError(validation);
 
-            {message && <p role="status">{message}</p>}
-            {error && <p role="alert">{error}</p>}
+    if (validation) {
+        showResult(validation, true);
+        return;
+    }
 
-            <section>
-                <h2>Change Username</h2>
-                <form onSubmit={handleUsernameSubmit}>
-                    <Input
-                        label="Username"
-                        value={username}
-                        onChange={(event) => setUsername(event.target.value)}
-                        placeholder="New username"
-                    />
-                    <Button type="submit" loading={loading === "username"}>
-                        Save Username
-                    </Button>
-                </form>
-            </section>
+    if (trimmedUsername === user?.username) {
+        showResult("Your username hasn't changed.", true);
+        return;
+    }
 
-            <section>
-                <h2>Change Email</h2>
-                <form onSubmit={handleEmailSubmit}>
-                    <Input
-                        label="New Email"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        placeholder="New email address"
-                    />
-                    <Input
-                        label="Current Password"
-                        type="password"
-                        value={emailPassword}
-                        onChange={(event) => setEmailPassword(event.target.value)}
-                        placeholder="Enter current password"
-                    />
-                    <Button type="submit" loading={loading === "email"}>
-                        Save Email
-                    </Button>
-                </form>
-            </section>
+    try {
+        setLoading("username");
+        await userService.updateUsername(trimmedUsername);
 
-            <section>
-                <h2>Change Password</h2>
-                <form onSubmit={handlePasswordSubmit}>
-                    <Input
-                        label="Current Password"
-                        type="password"
-                        value={oldPassword}
-                        onChange={(event) => setOldPassword(event.target.value)}
-                        placeholder="Current password"
-                    />
-                    <Input
-                        label="New Password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(event) => setNewPassword(event.target.value)}
-                        placeholder="At least 8 characters"
-                    />
-                    <Input
-                        label="Confirm New Password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
-                        placeholder="Repeat new password"
-                    />
-                    <Button type="submit" loading={loading === "password"}>
-                        Update Password
-                    </Button>
-                </form>
-            </section>
-        </div>
+        const updatedUser = { ...user, username: trimmedUsername };
+        login(token, updatedUser);
+        setUsername(trimmedUsername);
+        showResult("Username updated successfully.");
+    } catch (err) {
+        showResult(
+            err.response?.data?.message || "Failed to update username.",
+            true
+        );
+    } finally {
+        setLoading("");
+    }
+};
+
+const handleEmailSubmit = async (event) => {
+    event.preventDefault();
+    clearResult();
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const validation = validateEmail(trimmedEmail);
+    const passwordValidation = validateEmailPassword(emailPassword);
+
+    setEmailError(validation);
+    setEmailPasswordError(passwordValidation);
+
+    if (validation || passwordValidation) {
+        showResult(validation || passwordValidation, true);
+        return;
+    }
+
+    if (trimmedEmail === user?.email?.toLowerCase()) {
+        showResult("Your email hasn't changed.", true);
+        return;
+    }
+
+    try {
+        setLoading("email");
+        await userService.updateEmail(trimmedEmail, emailPassword);
+
+        const updatedUser = { ...user, email: trimmedEmail };
+        login(token, updatedUser);
+        setEmail(trimmedEmail);
+        setEmailPassword("");
+        setEmailPasswordError("");
+        showResult("Email updated successfully.");
+    } catch (err) {
+        showResult(
+            err.response?.data?.message || "Failed to update email.",
+            true
+        );
+    } finally {
+        setLoading("");
+    }
+};
+
+const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    clearResult();
+
+    const oldValidation = validateOldPassword(oldPassword);
+    const newValidation = validateNewPassword(newPassword);
+    const confirmValidation = validateConfirmPassword(
+        confirmPassword,
+        newPassword
     );
+
+    setOldPasswordError(oldValidation);
+    setNewPasswordError(newValidation);
+    setConfirmPasswordError(confirmValidation);
+
+    if (oldValidation || newValidation || confirmValidation) {
+        showResult(
+            oldValidation || newValidation || confirmValidation,
+            true
+        );
+        return;
+    }
+
+    if (oldPassword === newPassword) {
+        showResult(
+            "Your new password must differ from your current password.",
+            true
+        );
+        return;
+    }
+
+    try {
+        setLoading("password");
+        await userService.updatePassword(oldPassword, newPassword);
+
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+
+        setOldPasswordError("");
+        setNewPasswordError("");
+        setConfirmPasswordError("");
+
+        showResult("Password updated successfully.");
+    } catch (err) {
+        showResult(
+            err.response?.data?.message || "Failed to update password.",
+            true
+        );
+    } finally {
+        setLoading("");
+    }
+};
+
+return (
+    <div>
+        <h1>Account Settings</h1>
+
+        {message && <p role="status">{message}</p>}
+        {error && <p role="alert">{error}</p>}
+
+        <section>
+            <h2>Change Username</h2>
+
+            <form onSubmit={handleUsernameSubmit}>
+                <Input
+                    label="Username"
+                    value={username}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        setUsername(value);
+                        setUsernameError(validateUsername(value));
+                        clearResult();
+                    }}
+                    placeholder="New username"
+                    error={usernameError}
+                    success={
+                        username.trim().length >= 2 &&
+                        !usernameError &&
+                        username.trim() !== user?.username
+                    }
+                />
+
+                <Button type="submit" loading={loading === "username"}>
+                    Save Username
+                </Button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Change Email</h2>
+
+            <form onSubmit={handleEmailSubmit}>
+                <Input
+                    label="New Email"
+                    value={email}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        setEmail(value);
+                        setEmailError(validateEmail(value));
+                        clearResult();
+                    }}
+                    placeholder="New email address"
+                    error={emailError}
+                    success={
+                        email.trim().length > 0 &&
+                        !emailError &&
+                        email.trim().toLowerCase() !==
+                            user?.email?.toLowerCase()
+                    }
+                />
+
+                <Input
+                    label="Current Password"
+                    type="password"
+                    value={emailPassword}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        setEmailPassword(value);
+                        setEmailPasswordError(
+                            validateEmailPassword(value)
+                        );
+                        clearResult();
+                    }}
+                    placeholder="Enter current password"
+                    error={emailPasswordError}
+                    success={emailPassword.length > 0}
+                />
+
+                <Button type="submit" loading={loading === "email"}>
+                    Save Email
+                </Button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Change Password</h2>
+
+            <form onSubmit={handlePasswordSubmit}>
+                <Input
+                    label="Current Password"
+                    type="password"
+                    value={oldPassword}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        setOldPassword(value);
+                        setOldPasswordError(validateOldPassword(value));
+                        clearResult();
+                    }}
+                    placeholder="Current password"
+                    error={oldPasswordError}
+                    success={oldPassword.length > 0 && !oldPasswordError}
+                />
+
+                <Input
+                    label="New Password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        setNewPassword(value);
+                        setNewPasswordError(validateNewPassword(value));
+                        setConfirmPasswordError(
+                            confirmPassword
+                                ? validateConfirmPassword(
+                                      confirmPassword,
+                                      value
+                                  )
+                                : ""
+                        );
+                        clearResult();
+                    }}
+                    placeholder="8+ characters, uppercase, lowercase, special symbol"
+                    error={newPasswordError}
+                    success={
+                        newPassword.length > 0 && !newPasswordError
+                    }
+                />
+
+                <Input
+                    label="Confirm New Password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        setConfirmPassword(value);
+                        setConfirmPasswordError(
+                            validateConfirmPassword(value)
+                        );
+                        clearResult();
+                    }}
+                    placeholder="Repeat new password"
+                    error={confirmPasswordError}
+                    success={
+                        confirmPassword.length > 0 &&
+                        !confirmPasswordError
+                    }
+                />
+
+                <Button type="submit" loading={loading === "password"}>
+                    Update Password
+                </Button>
+            </form>
+        </section>
+    </div>
+);
+
+
 }

@@ -2,8 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import userService from "../services/userService";
+import discussionService from "../services/discussionService";
+
 import DiscussionCard from "../components/DiscussionCard";
 import ProfilePicture from "../components/ProfilePicture";
+
 import { useAuth } from "../context/AuthContext";
 
 
@@ -21,6 +24,13 @@ export default function Profile() {
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const fileInputRef = useRef(null);
+
+    const [privacyLoading, setPrivacyLoading] = useState(false);
+    const [privacyError, setPrivacyError] = useState("");
+
+    const [bookmarks, setBookmarks] = useState([]);
+    const [bookmarksLoading, setBookmarksLoading] = useState(false);
+    const [bookmarksError, setBookmarksError] = useState("");
 
 
     const handleProfilePictureUpload = async (event) => {
@@ -61,6 +71,34 @@ export default function Profile() {
         } finally {
             setUploading(false);
             event.target.value = "";
+        }
+    };
+
+
+    const handleTogglePrivacy = async () => {
+        if (!profile || user?.id !== profile._id) {
+            return;
+        }
+
+        const newValue = !profile.isPrivate;
+
+        try {
+            setPrivacyLoading(true);
+            setPrivacyError("");
+
+            await userService.updateProfilePrivacy(newValue);
+
+            setProfile(previous => ({
+                ...previous,
+                isPrivate: newValue
+            }));
+        } catch (error) {
+            setPrivacyError(
+                error.response?.data?.message ||
+                "Failed to update profile privacy."
+            );
+        } finally {
+            setPrivacyLoading(false);
         }
     };
 
@@ -148,7 +186,10 @@ export default function Profile() {
 
 
 
+
     useEffect(() => {
+        let cancelled = false;
+
         const loadProfile = async () => {
             try {
                 setLoading(true);
@@ -160,26 +201,62 @@ export default function Profile() {
                         userService.getUserDiscussions(id)
                     ]);
 
+                if (cancelled) return;
+
                 setProfile(profileData);
                 setDiscussions(discussionsData);
 
+                if (user?.id === profileData._id) {
+                    setBookmarksLoading(true);
+                    setBookmarksError("");
+
+                    try {
+                        const bookmarksData =
+                            await userService.getMyBookmarks();
+
+                        if (!cancelled) {
+                            setBookmarks(bookmarksData);
+                        }
+                    } catch (error) {
+                        if (!cancelled) {
+                            setBookmarksError(
+                                error.response?.data?.message ||
+                                "Failed to load bookmarks."
+                            );
+                        }
+                    } finally {
+                        if (!cancelled) {
+                            setBookmarksLoading(false);
+                        }
+                    }
+                } else {
+                    setBookmarks([]);
+                    setBookmarksError("");
+                    setBookmarksLoading(false);
+                }
             } catch (error) {
-                console.error(
-                    "LOAD PROFILE ERROR",
-                    error
-                );
+                if (cancelled) return;
+
+                console.error("LOAD PROFILE ERROR", error);
 
                 setError(
                     error.response?.data?.message ||
                     "Failed to load profile"
                 );
             } finally {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         };
 
         loadProfile();
-    }, [id]);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [id, user?.id]);
+
 
     if (loading) {
         return <p>Loading profile...</p>;
@@ -194,6 +271,7 @@ export default function Profile() {
     }
 
 
+    
     return (
         <div>
             <div>
@@ -238,6 +316,36 @@ export default function Profile() {
                         Account Settings
                     </button>
                 )}
+
+
+                {user?.id === profile._id && (
+                    <div>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={Boolean(profile.isPrivate)}
+                                onChange={handleTogglePrivacy}
+                                disabled={privacyLoading}
+                            />
+                            Private profile
+                        </label>
+
+                        <p>
+                            {profile.isPrivate
+                                ? "Only you can view your profile."
+                                : "Your profile is visible to everyone."}
+                        </p>
+
+                        {privacyLoading && <p>Saving privacy settings...</p>}
+
+                        {privacyError && (
+                            <p role="alert" style={{ color: "red" }}>
+                                {privacyError}
+                            </p>
+                        )}
+                    </div>
+                )}
+
 
                 {user?.role === "admin" &&
                     user?.id !== profile._id && (
@@ -284,6 +392,58 @@ export default function Profile() {
                     />
                 ))
             )}
+
+
+            {user?.id === profile._id && (
+                <section>
+                    <h2>My Bookmarks</h2>
+
+                    {bookmarksLoading ? (
+                        <p>Loading bookmarks...</p>
+                    ) : bookmarksError ? (
+                        <p>{bookmarksError}</p>
+                    ) : bookmarks.length === 0 ? (
+                        <p>You haven't bookmarked any discussions yet.</p>
+                    ) : (
+                        bookmarks.map((discussion) => (
+                            <div key={discussion._id}>
+                                <DiscussionCard discussion={discussion} />
+
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            await discussionService.unbookmarkDiscussion(
+                                                discussion._id
+                                            );
+
+                                            setBookmarks((previousBookmarks) =>
+                                                previousBookmarks.filter(
+                                                    (bookmark) =>
+                                                        bookmark._id !== discussion._id
+                                                )
+                                            );
+                                        } catch (error) {
+                                            console.error(
+                                                "REMOVE BOOKMARK ERROR",
+                                                error
+                                            );
+
+                                            setBookmarksError(
+                                                error.response?.data?.message ||
+                                                "Failed to remove bookmark."
+                                            );
+                                        }
+                                    }}
+                                >
+                                    Remove Bookmark
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </section>
+            )}
+            
         </div>
     );
 }

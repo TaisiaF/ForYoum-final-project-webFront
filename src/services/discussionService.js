@@ -95,6 +95,22 @@ const unlikeDiscussion = async (id) => {
 };
 
 
+const bookmarkDiscussion = async (id) => {
+    const response = await api.patch(
+        `/discussions/${id}/bookmark`
+    );
+
+    return response.data;
+};
+
+const unbookmarkDiscussion = async (id) => {
+    const response = await api.delete(
+        `/discussions/${id}/bookmark`
+    );
+
+    return response.data;
+};
+
 
 export default {
     createDiscussion,
@@ -103,5 +119,7 @@ export default {
     updateDiscussion,
     deleteDiscussion,
     likeDiscussion,
-    unlikeDiscussion
+    unlikeDiscussion,
+    bookmarkDiscussion,
+    unbookmarkDiscussion
 };

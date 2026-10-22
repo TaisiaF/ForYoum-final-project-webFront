@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +9,6 @@ import { useAuth } from "../context/AuthContext";
 import authService from "../services/authService";
 
 export default function Login() {
-
     const navigate = useNavigate();
 
     const {
@@ -16,92 +16,59 @@ export default function Login() {
         setVerificationMode
     } = useAuth();
 
-    const [username, setUsername] =
-        useState("");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
 
-    const [password, setPassword] =
-        useState("");
-
-    const [usernameError, setUsernameError] =
-        useState("");
-
-    const [passwordError, setPasswordError] =
-        useState("");
-
-    const [error, setError] =
-        useState("");
-
-    const [loading, setLoading] =
-        useState(false);
-
-    const validateUsername = (value) => {
-        if (value.length < 3) {
-            return "Username must be at least 3 characters.";
-        }
-
-        return "";
-    };
-
-    const validatePassword = (value) => {
-        if (value.length < 8) {
-            return "Password must be at least 8 characters.";
-        }
-
-        return "";
-    };
+    const [usernameError, setUsernameError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
-
         setError("");
 
+        // Only check whether the fields are empty.
         const usernameValidation =
-            validateUsername(username);
+            username.trim() === ""
+                ? "Username is required."
+                : "";
 
         const passwordValidation =
-            validatePassword(password);
+            password === ""
+                ? "Password is required."
+                : "";
 
         setUsernameError(usernameValidation);
         setPasswordError(passwordValidation);
 
-        if (
-            usernameValidation ||
-            passwordValidation
-        ) {
+        if (usernameValidation || passwordValidation) {
             return;
         }
 
         try {
-
             setLoading(true);
 
-            const response =
-                await authService.login({
-                    username,
-                    password
-                });
+            const response = await authService.login({
+                username,
+                password
+            });
 
             setPendingEmail(response.email);
-
             setVerificationMode("login");
 
             navigate("/auth/verify");
-
         } catch (err) {
-
             setError(
                 err?.response?.data?.message ||
                 "Login failed"
             );
-
         } finally {
-
             setLoading(false);
         }
     };
 
     return (
         <div>
-
             <h1>Login</h1>
 
             <Input
@@ -109,18 +76,18 @@ export default function Login() {
                 value={username}
                 placeholder="Enter username"
                 onChange={(event) => {
-                    const value =
-                        event.target.value;
-
+                    const value = event.target.value;
                     setUsername(value);
 
                     setUsernameError(
-                        validateUsername(value)
+                        value.trim() === ""
+                            ? "Username is required."
+                            : ""
                     );
                 }}
                 error={usernameError}
                 success={
-                    username.length > 0 &&
+                    username.trim().length > 0 &&
                     !usernameError
                 }
             />
@@ -131,13 +98,13 @@ export default function Login() {
                 placeholder="Enter password"
                 type="password"
                 onChange={(event) => {
-                    const value =
-                        event.target.value;
-
+                    const value = event.target.value;
                     setPassword(value);
 
                     setPasswordError(
-                        validatePassword(value)
+                        value === ""
+                            ? "Password is required."
+                            : ""
                     );
                 }}
                 error={passwordError}
@@ -147,9 +114,7 @@ export default function Login() {
                 }
             />
 
-            {error && (
-                <p>{error}</p>
-            )}
+            {error && <p>{error}</p>}
 
             <Button
                 onClick={handleLogin}
@@ -159,13 +124,10 @@ export default function Login() {
             </Button>
 
             <p
-                onClick={() =>
-                    navigate("/auth/register")
-                }
+                onClick={() => navigate("/auth/register")}
             >
                 Don't have an account? Register
             </p>
-
         </div>
     );
 }

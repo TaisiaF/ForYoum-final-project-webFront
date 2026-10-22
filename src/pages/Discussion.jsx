@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import discussionService from "../services/discussionService";
 import replyService from "../services/replyService";
+import userService from "../services/userService";
 
 import DiscussionActions from "../components/DiscussionActions";
 import DiscussionEditForm from "../components/DiscussionEditForm";
@@ -22,6 +23,10 @@ export default function Discussion() {
     const navigate = useNavigate();
 
     const [discussion, setDiscussion] = useState(null);
+
+    const [isBookmarked, setIsBookmarked] = useState(false);
+
+    const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -78,6 +83,36 @@ export default function Discussion() {
                 "LIKE DISCUSSION ERROR",
                 error
             );
+        }
+    };
+
+
+    const handleToggleBookmark = async () => {
+        if (!user) {
+            navigate("/auth/login");
+            return;
+        }
+
+        if (bookmarkLoading) return;
+
+        setBookmarkLoading(true);
+
+        try {
+            if (isBookmarked) {
+                await discussionService.unbookmarkDiscussion(
+                    discussion._id
+                );
+                setIsBookmarked(false);
+            } else {
+                await discussionService.bookmarkDiscussion(
+                    discussion._id
+                );
+                setIsBookmarked(true);
+            }
+        } catch (error) {
+            console.error("BOOKMARK DISCUSSION ERROR", error);
+        } finally {
+            setBookmarkLoading(false);
         }
     };
 
@@ -235,6 +270,18 @@ export default function Discussion() {
 
                 setDiscussion(response);
 
+                if (user) {
+                    const bookmarks = await userService.getMyBookmarks();
+
+                    setIsBookmarked(
+                        bookmarks.some(
+                            (bookmark) => bookmark._id === response._id
+                        )
+                    );
+                } else {
+                    setIsBookmarked(false);
+                }
+
                 await loadReplies();
 
             } catch (error) {
@@ -252,7 +299,7 @@ export default function Discussion() {
 
         loadDiscussion();
 
-    }, [id]);
+    }, [id, user?.id]);
 
     if (loading) {
         return <p>Loading...</p>;
@@ -360,6 +407,18 @@ export default function Discussion() {
                 onEdit={handleEditDiscussion}
                 onDelete={handleDeleteDiscussion}
             />
+
+            <button
+                type="button"
+                onClick={handleToggleBookmark}
+                disabled={bookmarkLoading}
+            >
+                {bookmarkLoading
+                    ? "Updating..."
+                    : isBookmarked
+                        ? "Remove Bookmark"
+                        : "Bookmark"}
+            </button>
 
             <p>
                 Likes: {discussion.likedBy.length}

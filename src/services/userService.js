@@ -6,6 +6,28 @@ const getUserById = async (id) => {
     return response.data;
 };
 
+
+const getMe = async () => {
+    const response = await api.get("/users/me");
+    return response.data;
+};
+
+
+const getMyBookmarks = async () => {
+    const response = await api.get("/users/me/bookmarks");
+    return response.data;
+};
+
+
+const updateProfilePrivacy = async (isPrivate) => {
+    const response = await api.patch("/users/me/privacy", {
+        isPrivate
+    });
+
+    return response.data;
+};
+
+
 const getUserDiscussions = async (id) => {
     const response = await api.get(
         `/users/${id}/discussions`
@@ -78,6 +100,9 @@ const deleteMyAccount = async () => {
 
 export default {
     getUserById,
+    getMe,
+    getMyBookmarks,
+    updateProfilePrivacy,
     getUserDiscussions,
     updateProfilePicture,
     updateUsername,
