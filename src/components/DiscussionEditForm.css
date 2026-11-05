@@ -1,0 +1,60 @@
+
+/* ========================================
+   ForYoum — Discussion Edit Form
+   ======================================== */
+
+.discussion-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-mist);
+    box-shadow: var(--shadow-soft);
+}
+
+.discussion-edit-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.discussion-edit-form__field label {
+    color: var(--color-navy);
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.discussion-edit-form__field input,
+.discussion-edit-form__field select,
+.discussion-edit-form__field textarea {
+    width: 100%;
+    min-width: 0;
+}
+
+.discussion-edit-form__field textarea {
+    min-height: 140px;
+    line-height: 1.6;
+}
+
+.discussion-edit-form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+@media (max-width: 600px) {
+    .discussion-edit-form {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .discussion-edit-form__actions {
+        gap: 8px;
+    }
+}

@@ -1,6 +1,18 @@
-import { useState } from "react"; import Input from "../components/Input"; import Button from "../components/Button"; import userService from "../services/userService"; import { useAuth } from "../context/AuthContext";
+import { useState } from "react"; 
+import { useNavigate } from "react-router-dom";
 
-export default function AccountSettings() { const { user, login, token } = useAuth();
+import Input from "../components/Input"; 
+import Button from "../components/Button"; 
+
+import userService from "../services/userService"; 
+import { useAuth } from "../context/AuthContext";
+import "./AccountSettings.css";
+
+
+export default function AccountSettings() {
+
+const navigate = useNavigate();
+const { user, login, token, logout } = useAuth();
 
 const [username, setUsername] = useState(user?.username || "");
 const [email, setEmail] = useState(user?.email || "");
@@ -23,6 +35,11 @@ const [error, setError] = useState("");
 const showResult = (text, isError = false) => {
     setMessage(isError ? "" : text);
     setError(isError ? text : "");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 };
 
 const clearResult = () => {
@@ -95,6 +112,28 @@ const validateConfirmPassword = (
     }
 
     return "";
+};
+
+const handleDeleteMyAccount = async () => {
+    const confirmed = window.confirm(
+        "Are you sure you want to delete your account?\n\nThis action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        setError("");
+        await userService.deleteMyAccount();
+
+        logout();
+        navigate("/");
+    } catch (err) {
+        showResult(
+            err.response?.data?.message ||
+            "Failed to delete your account.",
+            true
+        );
+    }
 };
 
 const handleUsernameSubmit = async (event) => {
@@ -229,157 +268,247 @@ const handlePasswordSubmit = async (event) => {
     }
 };
 
+
 return (
-    <div>
-        <h1>Account Settings</h1>
+    <main className="account-settings">
+        <header className="account-settings__header">
+            <div>
+                <span className="account-settings__eyebrow">
+                    YOUR ACCOUNT
+                </span>
 
-        {message && <p role="status">{message}</p>}
-        {error && <p role="alert">{error}</p>}
+                <h1>Account Settings</h1>
 
-        <section>
-            <h2>Change Username</h2>
+                <p>
+                    Manage your username, email address, and password.
+                </p>
+            </div>
 
-            <form onSubmit={handleUsernameSubmit}>
-                <Input
-                    label="Username"
-                    value={username}
-                    onChange={(event) => {
-                        const value = event.target.value;
-                        setUsername(value);
-                        setUsernameError(validateUsername(value));
-                        clearResult();
-                    }}
-                    placeholder="New username"
-                    error={usernameError}
-                    success={
-                        username.trim().length >= 2 &&
-                        !usernameError &&
-                        username.trim() !== user?.username
-                    }
-                />
+            <button
+                type="button"
+                className="account-settings__delete-button"
+                onClick={handleDeleteMyAccount}
+            >
+                Delete My Account
+            </button>
+        </header>
 
-                <Button type="submit" loading={loading === "username"}>
-                    Save Username
-                </Button>
-            </form>
-        </section>
+        {message && (
+            <p
+                className="account-settings__notice account-settings__notice--success"
+                role="status"
+            >
+                <span aria-hidden="true">✓</span>
+                {message}
+            </p>
+        )}
 
-        <section>
-            <h2>Change Email</h2>
+        {error && (
+            <p
+                className="account-settings__notice account-settings__notice--error"
+                role="alert"
+            >
+                {error}
+            </p>
+        )}
 
-            <form onSubmit={handleEmailSubmit}>
-                <Input
-                    label="New Email"
-                    value={email}
-                    onChange={(event) => {
-                        const value = event.target.value;
-                        setEmail(value);
-                        setEmailError(validateEmail(value));
-                        clearResult();
-                    }}
-                    placeholder="New email address"
-                    error={emailError}
-                    success={
-                        email.trim().length > 0 &&
-                        !emailError &&
-                        email.trim().toLowerCase() !==
-                            user?.email?.toLowerCase()
-                    }
-                />
+        <div className="account-settings__sections">
+            <section className="account-settings__section account-settings__section--username">
+                <div className="account-settings__section-heading">
+                    <span className="account-settings__section-icon" aria-hidden="true">
+                        U
+                    </span>
+                    <div>
+                        <h2>Change Username</h2>
+                        <p>Choose how other people see you on ForYoum.</p>
+                    </div>
+                </div>
 
-                <Input
-                    label="Current Password"
-                    type="password"
-                    value={emailPassword}
-                    onChange={(event) => {
-                        const value = event.target.value;
-                        setEmailPassword(value);
-                        setEmailPasswordError(
-                            validateEmailPassword(value)
-                        );
-                        clearResult();
-                    }}
-                    placeholder="Enter current password"
-                    error={emailPasswordError}
-                    success={emailPassword.length > 0}
-                />
+                <form
+                    className="account-settings__form"
+                    onSubmit={handleUsernameSubmit}
+                >
+                    <Input
+                        label="Username"
+                        value={username}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setUsername(value);
+                            setUsernameError(validateUsername(value));
+                            clearResult();
+                        }}
+                        placeholder="New username"
+                        error={usernameError}
+                        success={
+                            username.trim().length >= 3 &&
+                            !usernameError &&
+                            username.trim() !== user?.username
+                        }
+                    />
 
-                <Button type="submit" loading={loading === "email"}>
-                    Save Email
-                </Button>
-            </form>
-        </section>
+                    <div className="account-settings__form-actions">
+                        <Button
+                            type="submit"
+                            loading={loading === "username"}
+                        >
+                            Save Username
+                        </Button>
+                    </div>
+                </form>
+            </section>
 
-        <section>
-            <h2>Change Password</h2>
+            <section className="account-settings__section account-settings__section--email">
+                <div className="account-settings__section-heading">
+                    <span className="account-settings__section-icon" aria-hidden="true">
+                        ✉
+                    </span>
+                    <div>
+                        <h2>Change Email</h2>
+                        <p>Update your email address securely.</p>
+                    </div>
+                </div>
 
-            <form onSubmit={handlePasswordSubmit}>
-                <Input
-                    label="Current Password"
-                    type="password"
-                    value={oldPassword}
-                    onChange={(event) => {
-                        const value = event.target.value;
-                        setOldPassword(value);
-                        setOldPasswordError(validateOldPassword(value));
-                        clearResult();
-                    }}
-                    placeholder="Current password"
-                    error={oldPasswordError}
-                    success={oldPassword.length > 0 && !oldPasswordError}
-                />
+                <form
+                    className="account-settings__form"
+                    onSubmit={handleEmailSubmit}
+                >
+                    <Input
+                        label="New Email"
+                        value={email}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setEmail(value);
+                            setEmailError(validateEmail(value));
+                            clearResult();
+                        }}
+                        placeholder="New email address"
+                        error={emailError}
+                        success={
+                            email.trim().length > 0 &&
+                            !emailError &&
+                            email.trim().toLowerCase() !==
+                                user?.email?.toLowerCase()
+                        }
+                    />
 
-                <Input
-                    label="New Password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(event) => {
-                        const value = event.target.value;
-                        setNewPassword(value);
-                        setNewPasswordError(validateNewPassword(value));
-                        setConfirmPasswordError(
-                            confirmPassword
-                                ? validateConfirmPassword(
-                                      confirmPassword,
-                                      value
-                                  )
-                                : ""
-                        );
-                        clearResult();
-                    }}
-                    placeholder="8+ characters, uppercase, lowercase, special symbol"
-                    error={newPasswordError}
-                    success={
-                        newPassword.length > 0 && !newPasswordError
-                    }
-                />
+                    <Input
+                        label="Current Password"
+                        type="password"
+                        value={emailPassword}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setEmailPassword(value);
+                            setEmailPasswordError(
+                                validateEmailPassword(value)
+                            );
+                            clearResult();
+                        }}
+                        placeholder="Enter current password"
+                        error={emailPasswordError}
+                        success={emailPassword.length > 0}
+                    />
 
-                <Input
-                    label="Confirm New Password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) => {
-                        const value = event.target.value;
-                        setConfirmPassword(value);
-                        setConfirmPasswordError(
-                            validateConfirmPassword(value)
-                        );
-                        clearResult();
-                    }}
-                    placeholder="Repeat new password"
-                    error={confirmPasswordError}
-                    success={
-                        confirmPassword.length > 0 &&
-                        !confirmPasswordError
-                    }
-                />
+                    <div className="account-settings__form-actions">
+                        <Button
+                            type="submit"
+                            loading={loading === "email"}
+                        >
+                            Save Email
+                        </Button>
+                    </div>
+                </form>
+            </section>
 
-                <Button type="submit" loading={loading === "password"}>
-                    Update Password
-                </Button>
-            </form>
-        </section>
-    </div>
+            <section className="account-settings__section account-settings__section--password">
+                <div className="account-settings__section-heading">
+                    <span className="account-settings__section-icon" aria-hidden="true">
+                        ***
+                    </span>
+                    <div>
+                        <h2>Change Password</h2>
+                        <p>
+                            Use a strong password with uppercase and lowercase
+                            letters and a special character.
+                        </p>
+                    </div>
+                </div>
+
+                <form
+                    className="account-settings__form"
+                    onSubmit={handlePasswordSubmit}
+                >
+                    <Input
+                        label="Current Password"
+                        type="password"
+                        value={oldPassword}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setOldPassword(value);
+                            setOldPasswordError(validateOldPassword(value));
+                            clearResult();
+                        }}
+                        placeholder="Current password"
+                        error={oldPasswordError}
+                        success={oldPassword.length > 0 && !oldPasswordError}
+                    />
+
+                    <Input
+                        label="New Password"
+                        type="password"
+                        value={newPassword}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setNewPassword(value);
+                            setNewPasswordError(validateNewPassword(value));
+                            setConfirmPasswordError(
+                                confirmPassword
+                                    ? validateConfirmPassword(
+                                          confirmPassword,
+                                          value
+                                      )
+                                    : ""
+                            );
+                            clearResult();
+                        }}
+                        placeholder="Enter a new password"
+                        error={newPasswordError}
+                        success={
+                            newPassword.length > 0 && !newPasswordError
+                        }
+                    />
+
+                    <Input
+                        label="Confirm New Password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setConfirmPassword(value);
+                            setConfirmPasswordError(
+                                validateConfirmPassword(value)
+                            );
+                            clearResult();
+                        }}
+                        placeholder="Repeat your new password"
+                        error={confirmPasswordError}
+                        success={
+                            confirmPassword.length > 0 &&
+                            !confirmPasswordError
+                        }
+                    />
+
+                    <div className="account-settings__form-actions">
+                        <Button
+                            type="submit"
+                            loading={loading === "password"}
+                        >
+                            Update Password
+                        </Button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
 );
 
 

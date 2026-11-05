@@ -1,3 +1,7 @@
+
+import Button from "./Button";
+import "./ReplyComposer.css";
+
 export default function ReplyComposer({
     content,
     setContent,
@@ -5,8 +9,13 @@ export default function ReplyComposer({
     onSubmit
 }) {
     return (
-        <div>
+        <div className="reply-composer">
+            <label className="reply-composer__label">
+                Write a reply
+            </label>
+
             <textarea
+                className="reply-composer__textarea"
                 value={content}
                 onChange={(event) =>
                     setContent(event.target.value)
@@ -14,13 +23,15 @@ export default function ReplyComposer({
                 placeholder="Write a reply..."
             />
 
-            <button onClick={onSubmit}>
-                Reply
-            </button>
+            <div className="reply-composer__actions">
+                <Button onClick={onSubmit}>
+                    Reply
+                </Button>
 
-            <button onClick={onCancel}>
-                Cancel
-            </button>
+                <Button variant="outline" onClick={onCancel}>
+                    Cancel
+                </Button>
+            </div>
         </div>
     );
 }

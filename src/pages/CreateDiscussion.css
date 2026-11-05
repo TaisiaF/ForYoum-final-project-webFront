@@ -1,0 +1,255 @@
+
+.create-discussion-page {
+    width: min(100% - 40px, 760px);
+    margin: 42px auto 56px;
+    color: var(--color-navy);
+}
+
+/* Page heading */
+
+.create-discussion-header h1 {
+    margin-bottom: 28px;
+    color: var(--color-navy);
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+
+/* Form card */
+
+.create-discussion-card {
+    position: relative;
+    overflow: hidden;
+    padding: 30px;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-top: 5px solid var(--color-teal);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Form layout */
+
+.create-discussion-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding-top: 24px;
+}
+
+.create-discussion-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.create-discussion-field label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-navy);
+    font-size: 0.94rem;
+    font-weight: 700;
+}
+
+.create-discussion-textarea,
+.create-discussion-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    color: var(--color-navy);
+    background: #FFFEFC;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-size: 0.95rem;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        background-color 160ms ease;
+}
+
+.create-discussion-textarea {
+    min-height: 180px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.create-discussion-textarea::placeholder {
+    color: #98A3AC;
+}
+
+.create-discussion-select {
+    min-height: 46px;
+    cursor: pointer;
+}
+
+.create-discussion-textarea:focus,
+.create-discussion-select:focus {
+    outline: none;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgb(67 143 165 / 14%);
+    background: var(--color-white);
+}
+
+/* Image upload */
+
+.create-discussion-optional {
+    padding: 4px 8px;
+    color: var(--color-text-muted);
+    background: var(--color-mist);
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.create-discussion-upload input[type="file"] {
+    display: block;
+    max-width: 100%;
+    color: var(--color-navy);
+    font: inherit;
+    font-size: 0.88rem;
+}
+
+.create-discussion-upload input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    color: var(--color-navy);
+    background: #E2EFF1;
+    border: 1px solid #C8E0E4;
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 160ms ease;
+}
+
+.create-discussion-upload input[type="file"]::file-selector-button:hover {
+    background: #D3E8EC;
+}
+
+.create-discussion-upload p {
+    margin: 12px 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.83rem;
+    line-height: 1.5;
+}
+
+.create-discussion-selected-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 11px 13px;
+    background:#e3f3f5;
+    border: 1px solid #A8C9D0;
+    border-radius: var(--radius-md);
+    color: var(--color-navy);
+    font-size: 0.88rem;
+}
+
+.create-discussion-selected-file > span:first-child {
+    color: var(--color-teal);
+    font-size: 1.2rem;
+}
+
+.create-discussion-file-name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.create-discussion-remove-file {
+    flex-shrink: 0;
+    padding: 5px 7px;
+    color: #A44D4D;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.create-discussion-remove-file:hover {
+    background: #F9E3DD;
+}
+
+.create-discussion-remove-file:focus-visible {
+    outline: 2px solid var(--color-coral);
+    outline-offset: 2px;
+}
+
+/* Error message */
+
+.create-discussion-error {
+    padding: 12px 15px;
+    color: #A13F45;
+    background: #FFF0EE;
+    border: 1px solid #E9B9B5;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Actions */
+
+.create-discussion-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+    padding-top: 22px;
+    border-top: 1px solid var(--color-border);
+}
+
+.create-discussion-actions .btn {
+    min-height: 44px;
+}
+
+/* Responsive layout */
+
+@media (max-width: 600px) {
+    .create-discussion-page {
+        width: calc(100% - 28px);
+        margin: 28px auto 40px;
+    }
+
+    .create-discussion-header {
+        margin-bottom: 22px;
+    }
+
+    .create-discussion-card {
+        padding: 22px 18px;
+    }
+
+    .create-discussion-card-heading {
+        gap: 12px;
+    }
+
+    .create-discussion-card-heading h2 {
+        font-size: 1.15rem;
+    }
+
+    .create-discussion-form {
+        gap: 20px;
+    }
+
+    .create-discussion-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .create-discussion-actions .btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .create-discussion-selected-file {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+}

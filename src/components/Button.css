@@ -1,0 +1,107 @@
+
+/* ========================================
+   ForYoum — Button Component
+   ======================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 10px 16px;
+
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        background-color 160ms ease,
+        color 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn:focus-visible {
+    outline: 3px solid var(--color-sea-glass);
+    outline-offset: 3px;
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Primary: main actions */
+.btn--primary {
+    background: var(--color-teal);
+    border-color: var(--color-teal);
+    color: var(--color-white);
+}
+
+.btn--primary:hover:not(:disabled) {
+    background: #347A8E;
+    border-color: #347A8E;
+    color: var(--color-white);
+}
+
+/* Secondary: alternative actions */
+.btn--secondary {
+    background: #DCEFF1;
+    border-color: #DCEFF1;
+    color: #376F7E;
+}
+
+.btn--secondary:hover:not(:disabled) {
+    background: #CBE6EA;
+    border-color: #CBE6EA;
+}
+
+/* Outline: neutral actions */
+.btn--outline {
+    background: var(--color-white);
+    border-color: var(--color-border);
+    color: var(--color-navy);
+}
+
+.btn--outline:hover:not(:disabled) {
+    background: var(--color-mist);
+    border-color: var(--color-sea-glass);
+}
+
+/* Danger: destructive actions */
+.btn--danger {
+    background: #F5E3E0;
+    border-color: #F5E3E0;
+    color: #A45F65;
+}
+
+.btn--danger:hover:not(:disabled) {
+    background: #EED2CE;
+    border-color: #EED2CE;
+    color: #874B52;
+}
+
+/* Optional full-width button */
+.btn--full {
+    width: 100%;
+}

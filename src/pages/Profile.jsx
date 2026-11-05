@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -8,11 +9,11 @@ import DiscussionCard from "../components/DiscussionCard";
 import ProfilePicture from "../components/ProfilePicture";
 
 import { useAuth } from "../context/AuthContext";
-
+import "./Profile.css";
 
 export default function Profile() {
     const { id } = useParams();
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [profile, setProfile] = useState(null);
@@ -25,6 +26,11 @@ export default function Profile() {
     const [uploadError, setUploadError] = useState("");
     const fileInputRef = useRef(null);
 
+    const [editingDescription, setEditingDescription] = useState(false);
+    const [descriptionDraft, setDescriptionDraft] = useState("");
+    const [descriptionLoading, setDescriptionLoading] = useState(false);
+    const [descriptionError, setDescriptionError] = useState("");
+
     const [privacyLoading, setPrivacyLoading] = useState(false);
     const [privacyError, setPrivacyError] = useState("");
 
@@ -32,13 +38,14 @@ export default function Profile() {
     const [bookmarksLoading, setBookmarksLoading] = useState(false);
     const [bookmarksError, setBookmarksError] = useState("");
 
+    const isOwnProfile = Boolean(user?.id && profile?._id === user.id);
+    const isAdminViewingOther =
+        user?.role === "admin" && profile?._id !== user?.id;
 
     const handleProfilePictureUpload = async (event) => {
         const file = event.target.files?.[0];
 
-        if (!file) {
-            return;
-        }
+        if (!file) return;
 
         if (!file.type.startsWith("image/")) {
             setUploadError("Please select an image file.");
@@ -56,12 +63,11 @@ export default function Profile() {
             setUploading(true);
             setUploadError("");
 
-            const result =
-                await userService.updateProfilePicture(file);
+            const result = await userService.updateProfilePicture(file);
 
-            setProfile(previous => ({
+            setProfile((previous) => ({
                 ...previous,
-                profilePicture: result.profilePicture
+                profilePicture: result.profilePicture,
             }));
         } catch (error) {
             setUploadError(
@@ -75,10 +81,41 @@ export default function Profile() {
     };
 
 
-    const handleTogglePrivacy = async () => {
-        if (!profile || user?.id !== profile._id) {
+    const handleSaveDescription = async () => {
+        if (!profile) return;
+
+        if (descriptionDraft.length > 300) {
+            setDescriptionError("Description cannot exceed 300 characters.");
             return;
         }
+
+        try {
+            setDescriptionLoading(true);
+            setDescriptionError("");
+
+            const result = await userService.updateDescription(
+                descriptionDraft
+            );
+
+            setProfile((previous) => ({
+                ...previous,
+                description: result.description,
+            }));
+
+            setEditingDescription(false);
+        } catch (error) {
+            setDescriptionError(
+                error.response?.data?.message ||
+                "Failed to update description."
+            );
+        } finally {
+            setDescriptionLoading(false);
+        }
+    };
+
+
+    const handleTogglePrivacy = async () => {
+        if (!profile || !isOwnProfile) return;
 
         const newValue = !profile.isPrivate;
 
@@ -88,9 +125,9 @@ export default function Profile() {
 
             await userService.updateProfilePrivacy(newValue);
 
-            setProfile(previous => ({
+            setProfile((previous) => ({
                 ...previous,
-                isPrivate: newValue
+                isPrivate: newValue,
             }));
         } catch (error) {
             setPrivacyError(
@@ -104,9 +141,7 @@ export default function Profile() {
 
 
     const handleToggleBan = async () => {
-        if (!profile || user?.role !== "admin" || user?.id === profile._id) {
-            return;
-        }
+        if (!profile || !isAdminViewingOther) return;
 
         try {
             setBanLoading(true);
@@ -114,15 +149,15 @@ export default function Profile() {
 
             if (profile.banned) {
                 await userService.unbanUser(profile._id);
-                setProfile(previous => ({
+                setProfile((previous) => ({
                     ...previous,
-                    banned: false
+                    banned: false,
                 }));
             } else {
                 await userService.banUser(profile._id);
-                setProfile(previous => ({
+                setProfile((previous) => ({
                     ...previous,
-                    banned: true
+                    banned: true,
                 }));
             }
         } catch (error) {
@@ -141,15 +176,11 @@ export default function Profile() {
             `Are you sure you want to delete ${profile.username}?\n\nThis action cannot be undone.`
         );
 
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
 
         try {
             setError("");
-
             await userService.deleteUserById(profile._id);
-
             navigate("/");
         } catch (error) {
             setError(
@@ -160,31 +191,26 @@ export default function Profile() {
     };
 
 
-    const handleDeleteMyAccount = async () => {
-        const confirmed = window.confirm(
-            "Are you sure you want to delete your account?\n\nThis action cannot be undone."
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
+    const handleRemoveBookmark = async (discussionId) => {
         try {
-            setError("");
+            setBookmarksError("");
 
-            await userService.deleteMyAccount();
+            await discussionService.unbookmarkDiscussion(discussionId);
 
-            logout();
-            navigate("/");
+            setBookmarks((previousBookmarks) =>
+                previousBookmarks.filter(
+                    (bookmark) => bookmark._id !== discussionId
+                )
+            );
         } catch (error) {
-            setError(
+            console.error("REMOVE BOOKMARK ERROR", error);
+
+            setBookmarksError(
                 error.response?.data?.message ||
-                "Failed to delete your account."
+                "Failed to remove bookmark."
             );
         }
     };
-
-
 
 
     useEffect(() => {
@@ -195,11 +221,10 @@ export default function Profile() {
                 setLoading(true);
                 setError("");
 
-                const [profileData, discussionsData] =
-                    await Promise.all([
-                        userService.getUserById(id),
-                        userService.getUserDiscussions(id)
-                    ]);
+                const [profileData, discussionsData] = await Promise.all([
+                    userService.getUserById(id),
+                    userService.getUserDiscussions(id),
+                ]);
 
                 if (cancelled) return;
 
@@ -241,7 +266,7 @@ export default function Profile() {
 
                 setError(
                     error.response?.data?.message ||
-                    "Failed to load profile"
+                    "Failed to load profile."
                 );
             } finally {
                 if (!cancelled) {
@@ -257,193 +282,385 @@ export default function Profile() {
         };
     }, [id, user?.id]);
 
-
     if (loading) {
-        return <p>Loading profile...</p>;
+        return (
+            <main className="profile-page">
+                <p className="profile-state">Loading profile...</p>
+            </main>
+        );
     }
 
-    if (error) {
-        return <p>{error}</p>;
+    if (error && !profile) {
+        return (
+            <main className="profile-page">
+                <p className="profile-message profile-message--error" role="alert">
+                    {error}
+                </p>
+            </main>
+        );
     }
 
     if (!profile) {
-        return <p>User not found.</p>;
+        return (
+            <main className="profile-page">
+                <p className="profile-state">User not found.</p>
+            </main>
+        );
     }
 
 
-    
     return (
-        <div>
-            <div>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={handleProfilePictureUpload}
-                />
-
-                <ProfilePicture
-                    src={profile.profilePicture}
-                    alt={`${profile.username}'s profile`}
-                    size={150}
-                />
-
-                <h1>{profile.username}</h1>
-                <p>Role: {profile.role}</p>
-
-                {user?.role === "admin" && user?.id !== profile._id && (
-                    <div>
-                        <p>
-                            Status: {profile.banned ? "Banned" : "Active"}
-                        </p>
-
-                        <button
-                            onClick={handleToggleBan}
-                            disabled={banLoading}
-                        >
-                            {banLoading
-                                ? "Please wait..."
-                                : profile.banned
-                                    ? "Unban User"
-                                    : "Ban User"}
-                        </button>
-                    </div>
-                )}
-
-                {user?.id === profile._id && (
-                    <button onClick={() => navigate("/account-settings")}>
-                        Account Settings
-                    </button>
+        <main className="profile-page">
+            <div className="profile-content">
+                {error && (
+                    <p
+                        className="profile-message profile-message--error"
+                        role="alert"
+                    >
+                        {error}
+                    </p>
                 )}
 
 
-                {user?.id === profile._id && (
-                    <div>
-                        <label>
+
+
+
+
+
+
+
+
+
+
+<section className="profile-header">
+    {/* Left: profile description */}
+    <div className="profile-header__description-area">
+        {!profile.isPrivate && (
+            <div className="profile-description">
+                {editingDescription && isOwnProfile ? (
+                    <>
+                        <textarea
+                            className="profile-description__input"
+                            value={descriptionDraft}
+                            onChange={(event) =>
+                                setDescriptionDraft(event.target.value)
+                            }
+                            maxLength={300}
+                            rows={4}
+                            placeholder="Tell people a little about yourself..."
+                            aria-label="Profile description"
+                            disabled={descriptionLoading}
+                        />
+
+                        <div className="profile-description__counter">
+                            {descriptionDraft.length}/300
+                        </div>
+
+                        <div className="profile-description__actions">
+                            <button
+                                type="button"
+                                className="profile-button profile-button--primary"
+                                onClick={handleSaveDescription}
+                                disabled={descriptionLoading}
+                            >
+                                {descriptionLoading ? "Saving..." : "Save"}
+                            </button>
+
+                            <button
+                                type="button"
+                                className="profile-button profile-button--secondary"
+                                onClick={() => {
+                                    setDescriptionDraft(profile.description || "");
+                                    setDescriptionError("");
+                                    setEditingDescription(false);
+                                }}
+                                disabled={descriptionLoading}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {profile.description?.trim() && (
+                            <p className="profile-description__text">
+                                {profile.description}
+                            </p>
+                        )}
+
+                        {isOwnProfile && (
+                            <button
+                                type="button"
+                                className="profile-button profile-button--secondary"
+                                onClick={() => {
+                                    setDescriptionDraft(profile.description || "");
+                                    setDescriptionError("");
+                                    setEditingDescription(true);
+                                }}
+                            >
+                                {profile.description?.trim()
+                                    ? "Edit Description"
+                                    : "Add Description"}
+                            </button>
+                        )}
+                    </>
+                )}
+
+                {descriptionError && (
+                    <p
+                        className="profile-message profile-message--error"
+                        role="alert"
+                    >
+                        {descriptionError}
+                    </p>
+                )}
+            </div>
+        )}
+    </div>
+
+    {/* Center: profile picture, username, role and status */}
+    <div className="profile-header__identity">
+        <div className="profile-header__picture">
+            <ProfilePicture
+                src={profile.profilePicture}
+                alt={`${profile.username}'s profile`}
+                size={150}
+            />
+        </div>
+
+        <h1 className="profile-header__username">
+            {profile.username}
+        </h1>
+
+        <span className="profile-role">
+            {profile.role === "admin" ? "Administrator" : "Member"}
+        </span>
+
+        {isAdminViewingOther && (
+            <span
+                className={`profile-status ${
+                    profile.banned
+                        ? "profile-status--banned"
+                        : "profile-status--active"
+                }`}
+            >
+                {profile.banned ? "Banned account" : "Active account"}
+            </span>
+        )}
+    </div>
+
+    {/* Right: existing profile actions */}
+    {isOwnProfile && (
+        <div className="profile-header__actions">
+            <button
+                type="button"
+                className="profile-button profile-button--primary"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+            >
+                {uploading
+                    ? "Uploading..."
+                    : "Change Profile Picture"}
+            </button>
+
+            <button
+                type="button"
+                className="profile-button profile-button--secondary"
+                onClick={() => navigate("/account-settings")}
+            >
+                Account Settings
+            </button>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleProfilePictureUpload}
+            />
+        </div>
+    )}
+
+    {uploadError && (
+        <p
+            className="profile-message profile-message--error"
+            role="alert"
+        >
+            {uploadError}
+        </p>
+    )}
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                {isOwnProfile && (
+                    <section className="profile-settings-panel">
+                        <div className="profile-section-heading">
+                            <span className="profile-section-heading__icon">
+                                <span aria-hidden="true">🔒</span>
+                            </span>
+                            <div>
+                                <h2>Profile Privacy</h2>
+                                <p>Choose who can view your profile.</p>
+                            </div>
+                        </div>
+
+                        <label className="profile-privacy-toggle">
+                            <span className="profile-privacy-toggle__text">
+                                <strong>Make profile private?</strong>
+                                <span>
+                                    {profile.isPrivate
+                                        ? "Only you can view your profile."
+                                        : "Your profile is visible to everyone."}
+                                </span>
+                            </span>
+
                             <input
                                 type="checkbox"
                                 checked={Boolean(profile.isPrivate)}
                                 onChange={handleTogglePrivacy}
                                 disabled={privacyLoading}
                             />
-                            Private profile
                         </label>
 
-                        <p>
-                            {profile.isPrivate
-                                ? "Only you can view your profile."
-                                : "Your profile is visible to everyone."}
-                        </p>
-
-                        {privacyLoading && <p>Saving privacy settings...</p>}
+                        {privacyLoading && (
+                            <p className="profile-message">
+                                Saving privacy settings...
+                            </p>
+                        )}
 
                         {privacyError && (
-                            <p role="alert" style={{ color: "red" }}>
+                            <p
+                                className="profile-message profile-message--error"
+                                role="alert"
+                            >
                                 {privacyError}
                             </p>
                         )}
+                    </section>
+                )}
+
+                {isAdminViewingOther && (
+                    <section className="profile-admin-panel">
+                        <h2>Administrator Controls</h2>
+                        <p>
+                            Account status:{" "}
+                            <strong>{profile.banned ? "Banned" : "Active"}</strong>
+                        </p>
+
+                        <div className="profile-admin-panel__actions">
+                            <button
+                                type="button"
+                                className="profile-button profile-button--secondary"
+                                onClick={handleToggleBan}
+                                disabled={banLoading}
+                            >
+                                {banLoading
+                                    ? "Please wait..."
+                                    : profile.banned
+                                        ? "Unban User"
+                                        : "Ban User"}
+                            </button>
+
+                            <button
+                                type="button"
+                                className="profile-button profile-button--danger"
+                                onClick={handleDeleteUser}
+                            >
+                                Delete User
+                            </button>
+                        </div>
+                    </section>
+                )}
+
+                <section className="profile-section">
+                    <div className="profile-section-heading">
+                        <span className="profile-section-heading__icon profile-section-heading__icon--teal">
+                            <span aria-hidden="true">✎</span>
+                        </span>
+                        <div>
+                            <h2>Discussions by {profile.username}</h2>
+                        </div>
                     </div>
-                )}
 
+                    {discussions.length === 0 ? (
+                        <div className="profile-empty-state">
+                            <p>This user hasn't created any discussions yet.</p>
+                        </div>
+                    ) : (
+                        <div className="profile-card-list">
+                            {discussions.map((discussion) => (
+                                <DiscussionCard
+                                    key={discussion._id}
+                                    discussion={discussion}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </section>
 
-                {user?.role === "admin" &&
-                    user?.id !== profile._id && (
-                        <button onClick={handleDeleteUser}>
-                            Delete User
-                        </button>
-                )}
+                {isOwnProfile && (
+                    <section className="profile-section profile-bookmarks">
+                        <div className="profile-section-heading">
+                            <span className="profile-section-heading__icon profile-section-heading__icon--coral">
+                                <span aria-hidden="true">♡</span>
+                            </span>
+                            <div>
+                                <h2>My Bookmarks</h2>
+                            </div>
+                        </div>
 
-                {user?.id === profile._id && (
-                    <button onClick={handleDeleteMyAccount}>
-                        Delete My Account
-                    </button>
-                )}
-
-                {user?.id === profile._id && (
-                    <>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                        >
-                            {uploading
-                                ? "Uploading..."
-                                : "Change profile picture"}
-                        </button>
-
-                        {uploadError && (
-                            <p style={{ color: "red" }}>
-                                {uploadError}
+                        {bookmarksLoading ? (
+                            <p className="profile-state">Loading bookmarks...</p>
+                        ) : bookmarksError ? (
+                            <p
+                                className="profile-message profile-message--error"
+                                role="alert"
+                            >
+                                {bookmarksError}
                             </p>
+                        ) : bookmarks.length === 0 ? (
+                            <div className="profile-empty-state">
+                                <p>You haven't bookmarked any discussions yet.</p>
+                            </div>
+                        ) : (
+                            <div className="profile-card-list">
+                                {bookmarks.map((discussion) => (
+                                    <div
+                                        className="profile-bookmark-item"
+                                        key={discussion._id}
+                                    >
+                                        <DiscussionCard discussion={discussion} />
+
+                                        <div className="profile-bookmark-item__actions">
+                                            <button
+                                                type="button"
+                                                className="profile-button profile-button--remove"
+                                                onClick={() =>
+                                                    handleRemoveBookmark(discussion._id)
+                                                }
+                                            >
+                                                Remove Bookmark
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         )}
-                    </>
+                    </section>
                 )}
             </div>
 
-            <h2>Discussions by {profile.username}</h2>
-
-            {discussions.length === 0 ? (
-                <p>This user hasn't created any discussions yet.</p>
-            ) : (
-                discussions.map(discussion => (
-                    <DiscussionCard
-                        key={discussion._id}
-                        discussion={discussion}
-                    />
-                ))
-            )}
-
-
-            {user?.id === profile._id && (
-                <section>
-                    <h2>My Bookmarks</h2>
-
-                    {bookmarksLoading ? (
-                        <p>Loading bookmarks...</p>
-                    ) : bookmarksError ? (
-                        <p>{bookmarksError}</p>
-                    ) : bookmarks.length === 0 ? (
-                        <p>You haven't bookmarked any discussions yet.</p>
-                    ) : (
-                        bookmarks.map((discussion) => (
-                            <div key={discussion._id}>
-                                <DiscussionCard discussion={discussion} />
-
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        try {
-                                            await discussionService.unbookmarkDiscussion(
-                                                discussion._id
-                                            );
-
-                                            setBookmarks((previousBookmarks) =>
-                                                previousBookmarks.filter(
-                                                    (bookmark) =>
-                                                        bookmark._id !== discussion._id
-                                                )
-                                            );
-                                        } catch (error) {
-                                            console.error(
-                                                "REMOVE BOOKMARK ERROR",
-                                                error
-                                            );
-
-                                            setBookmarksError(
-                                                error.response?.data?.message ||
-                                                "Failed to remove bookmark."
-                                            );
-                                        }
-                                    }}
-                                >
-                                    Remove Bookmark
-                                </button>
-                            </div>
-                        ))
-                    )}
-                </section>
-            )}
-            
-        </div>
+        </main>
     );
 }

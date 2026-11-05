@@ -1,0 +1,43 @@
+
+.reply-composer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-teal);
+    border-radius: var(--radius-md);
+    background: var(--color-mist);
+}
+
+.reply-composer__label {
+    color: var(--color-navy);
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.reply-composer__textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 90px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.reply-composer__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+@media (max-width: 480px) {
+    .reply-composer {
+        padding: 12px;
+    }
+}

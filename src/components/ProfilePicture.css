@@ -1,0 +1,111 @@
+.profile-picture-button {
+    display: block;
+    flex-shrink: 0;
+    width: fit-content;
+    height: fit-content;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+
+.profile-picture-button:focus-visible {
+    outline: 3px solid var(--color-teal);
+    outline-offset: 3px;
+}
+
+.profile-picture {
+    display: block;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #ddd;
+    transition: transform 0.2s ease;
+}
+
+.profile-picture-button:hover .profile-picture {
+    transform: scale(1.05);
+}
+
+/* Image preview overlay */
+
+.profile-picture-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 60px 24px;
+    background: rgb(20 29 40 / 85%);
+    backdrop-filter: blur(4px);
+
+    cursor: zoom-out;
+}
+
+.profile-picture-modal__image {
+    display: block;
+    max-width: 90vw;
+    max-height: 85vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 35px rgb(0 0 0 / 30%);
+
+    cursor: default;
+}
+
+.profile-picture-modal__close {
+    position: absolute;
+    top: 20px;
+    right: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+    padding: 0;
+
+    border: 1px solid rgb(255 255 255 / 35%);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 12%);
+
+    color: white;
+    font-size: 32px;
+    line-height: 1;
+
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.profile-picture-modal__close:hover {
+    background: rgb(255 255 255 / 28%);
+}
+
+.profile-picture-modal__close:focus-visible {
+    outline: 3px solid var(--color-sea-glass);
+    outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+    .profile-picture-modal {
+        padding: 50px 16px;
+    }
+
+    .profile-picture-modal__image {
+        max-width: 95vw;
+        max-height: 80vh;
+    }
+
+    .profile-picture-modal__close {
+        top: 12px;
+        right: 12px;
+    }
+}

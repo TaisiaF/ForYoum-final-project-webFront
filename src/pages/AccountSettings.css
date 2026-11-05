@@ -1,0 +1,213 @@
+
+.account-settings {
+    width: min(100% - 32px, 820px);
+    margin: 36px auto 56px;
+    color: var(--color-navy);
+}
+
+.account-settings__header {
+    margin-bottom: 28px;
+}
+
+.account-settings__eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--color-teal);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+}
+
+.account-settings__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.account-settings__delete-button {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    border: 1px solid #d98783;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: #b65353;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.account-settings__delete-button:hover {
+    background: #b65353;
+    color: white;
+}
+
+.account-settings__delete-button:focus-visible {
+    outline: 3px solid var(--color-coral);
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .account-settings__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .account-settings__delete-button {
+        align-self: flex-start;
+    }
+}
+
+.account-settings__header h1 {
+    margin: 0 0 10px;
+    color: var(--color-navy);
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    line-height: 1.2;
+}
+
+.account-settings__header p {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.account-settings__sections {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.account-settings__section {
+    padding: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-soft);
+    min-width: 0;
+}
+
+.account-settings__section--username {
+    border-top: 4px solid var(--color-teal);
+}
+
+.account-settings__section--email {
+    border-top: 4px solid var(--color-sea-glass);
+}
+
+.account-settings__section--password {
+    border-top: 4px solid var(--color-teal);
+}
+
+.account-settings__section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.account-settings__section-icon {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: var(--radius-md);
+    background: #E0F0F2;
+    color: var(--color-teal);
+    font-size: 1.2rem;
+    font-weight: 750;
+}
+
+.account-settings__section--email .account-settings__section-icon {
+    background: #E3F1F7;
+    color: #277E9C;
+}
+
+.account-settings__section--password .account-settings__section-icon {
+    background: #E0F0F2;
+    color: var(--color-teal)
+}
+
+.account-settings__section-heading h2 {
+    margin: 0 0 6px;
+    color: var(--color-navy);
+    font-size: 1.2rem;
+}
+
+.account-settings__section-heading p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.account-settings__form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.account-settings__form > .form-field {
+    width: 100%;
+}
+
+.account-settings__form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    padding-top: 2px;
+}
+
+.account-settings__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 22px;
+    padding: 13px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: 0.93rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.account-settings__notice--success {
+    border-color: #a2d4c8;
+    background: #dff4ea;
+    color: #276B58;
+}
+
+.account-settings__notice--error {
+    border-color: #eeb6bb;
+    background: #ffe3e5;
+    color: #984E58;
+}
+
+@media (max-width: 600px) {
+    .account-settings {
+        width: min(100% - 24px, 820px);
+        margin-top: 24px;
+    }
+
+    .account-settings__section {
+        padding: 18px;
+    }
+
+    .account-settings__section-heading {
+        gap: 11px;
+        margin-bottom: 20px;
+    }
+
+    .account-settings__section-icon {
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .account-settings__form {
+        gap: 18px;
+    }
+}

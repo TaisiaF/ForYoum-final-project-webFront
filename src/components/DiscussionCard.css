@@ -1,0 +1,135 @@
+
+.discussion-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 20px 22px;
+    background: var(--color-white, #FCFCFA);
+    border: 1px solid var(--color-border, #DCE3E5);
+    border-radius: 12px;
+    cursor: pointer;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        transform 180ms ease;
+}
+
+.discussion-card:hover {
+    border-color: var(--color-sea-glass, #70B9CA);
+    box-shadow: 0 5px 16px rgba(41, 63, 94, 0.07);
+    transform: translateY(-1px);
+}
+
+.discussion-card:focus-visible {
+    outline: 3px solid var(--color-sea-glass, #70B9CA);
+    outline-offset: 3px;
+}
+
+.discussion-card__picture {
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.discussion-card__main {
+    flex: 1;
+    min-width: 0;
+}
+
+.discussion-card__title {
+    margin: 0 0 5px;
+    color: var(--color-navy, #293F5E);
+    font-size: 1.1rem;
+    font-weight: 650;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.discussion-card:hover .discussion-card__title {
+    color: var(--color-teal, #438FA5);
+}
+
+.discussion-card__author {
+    margin: 0 0 10px;
+    color: var(--color-text-muted, #71808D);
+    font-size: 0.9rem;
+}
+
+.discussion-card__author-name {
+    color: var(--color-navy, #293F5E);
+    font-weight: 600;
+}
+
+.discussion-card__metadata {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+.discussion-card__category {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--color-mist, #F2F4F4);
+    color: var(--color-navy, #293F5E);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.discussion-card__date {
+    color: var(--color-text-muted, #71808D);
+    font-size: 0.82rem;
+}
+
+.discussion-card__likes {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding-left: 12px;
+    color: var(--color-navy, #293F5E);
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.discussion-card__heart {
+    color: var(--color-coral, #D98783);
+    font-size: 1.1rem;
+}
+
+@media (max-width: 560px) {
+    .discussion-card {
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+    }
+
+    .discussion-card__likes {
+        gap: 4px;
+        padding-left: 0;
+        font-size: 0.82rem;
+    }
+
+    .discussion-card__title {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .discussion-card {
+        flex-wrap: wrap;
+    }
+
+    .discussion-card__main {
+        flex-basis: calc(100% - 60px);
+    }
+
+    .discussion-card__likes {
+        margin-left: auto;
+        padding-top: 4px;
+    }
+}

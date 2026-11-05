@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,8 +8,9 @@ import Button from "../components/Button";
 import { useAuth } from "../context/AuthContext";
 import authService from "../services/authService";
 
-export default function Verify() {
+import "./Verify.css";
 
+export default function Verify() {
     const navigate = useNavigate();
 
     const {
@@ -17,98 +19,106 @@ export default function Verify() {
         login
     } = useAuth();
 
-    const [code, setCode] =
-        useState("");
-
-    const [error, setError] =
-        useState("");
-
-    const [loading, setLoading] =
-        useState(false);
+    const [code, setCode] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleVerify = async () => {
-
         try {
-
             setError("");
             setLoading(true);
 
-            if (
-                verificationMode ===
-                "register"
-            ) {
-
-                await authService
-                    .verifyRegistration({
-                        email: pendingEmail,
-                        code
-                    });
+            if (verificationMode === "register") {
+                await authService.verifyRegistration({
+                    email: pendingEmail,
+                    code
+                });
 
                 navigate("/auth/login");
-
                 return;
             }
 
-            const response =
-                await authService
-                    .verifyLogin({
-                        email: pendingEmail,
-                        code
-                    });
+            const response = await authService.verifyLogin({
+                email: pendingEmail,
+                code
+            });
 
-            login(
-                response.token,
-                response.user
-            );
-
+            login(response.token, response.user);
             navigate("/");
-
         } catch (err) {
-
             setError(
                 err?.response?.data?.message ||
                 "Verification failed"
             );
-
         } finally {
-
             setLoading(false);
         }
     };
 
     return (
-        <div>
+        <main className="verify-page">
+            <section className="verify-card">
+                <div className="verify-card__icon" aria-hidden="true">
+                    <span>✉</span>
+                </div>
 
-            <h1>Verification</h1>
+                <p className="verify-card__eyebrow">
+                    ONE MORE STEP
+                </p>
 
-            <p>
-                Enter the code sent to
-            </p>
+                <h1 className="verify-card__title">
+                    Check your email
+                </h1>
 
-            <p>
-                {pendingEmail}
-            </p>
+                <p className="verify-card__description">
+                    We've sent a verification code to
+                </p>
 
-            <Input
-                label="Verification Code"
-                value={code}
-                onChange={(event) =>
-                    setCode(event.target.value)
-                }
-                placeholder="Enter code"
-            />
+                <p className="verify-card__email">
+                    {pendingEmail || "your email address"}
+                </p>
 
-            {error && (
-                <p>{error}</p>
-            )}
+                <div className="verify-card__form">
+                    <Input
+                        label="Verification Code"
+                        value={code}
+                        onChange={(event) =>
+                            setCode(event.target.value)
+                        }
+                        placeholder="Enter your code"
+                    />
 
-            <Button
-                onClick={handleVerify}
-                loading={loading}
-            >
-                Verify
-            </Button>
+                    <p className="verify-card__hint">
+                        Enter the code from your email to{" "}
+                        {verificationMode === "register"
+                            ? "complete your registration."
+                            : "finish signing in."}
+                    </p>
 
-        </div>
+                    {error && (
+                        <p
+                            className="verify-card__error"
+                            role="alert"
+                        >
+                            {error}
+                        </p>
+                    )}
+
+                    <Button
+                        onClick={handleVerify}
+                        loading={loading}
+                        disabled={loading}
+                        className="verify-card__button"
+                    >
+                        Verify code
+                    </Button>
+                </div>
+
+                <p className="verify-card__footer">
+                    Make sure to check your spam folder if you
+                    can't find the email.
+                </p>
+            </section>
+        </main>
     );
 }

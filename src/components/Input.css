@@ -1,0 +1,83 @@
+
+/* ========================================
+   ForYoum — Input Component
+   ======================================== */
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+.form-field__label {
+    color: var(--color-navy);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.form-field__control {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+}
+
+.form-field__input {
+    width: 100%;
+    min-width: 0;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.form-field__control:has(.form-field__password-toggle) .form-field__input {
+    padding-right: 68px;
+}
+
+.form-field__password-toggle {
+    position: absolute;
+    right: 8px;
+    padding: 5px 8px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-teal);
+    font-size: 0.85rem;
+    font-weight: 650;
+}
+
+.form-field--error .form-field__input {
+    border: 2px solid var(--color-dusty-rose);
+}
+
+.form-field--error .form-field__input:focus {
+    border: 2px solid var(--color-dusty-rose);
+    box-shadow: 0 0 0 3px rgb(199 127 136 / 16%);
+}
+
+.form-field--error .form-field__input:focus {
+    border-color: var(--color-dusty-rose);
+    box-shadow: 0 0 0 3px rgb(199 127 136 / 16%);
+}
+
+.form-field--success .form-field__input {
+    border: 2px solid var(--color-teal);
+}
+
+.form-field__message {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.form-field__message--error {
+    color: #A45F65;
+}
+
+.form-field__message--success {
+    color: var(--color-teal);
+    font-weight: 600;
+}

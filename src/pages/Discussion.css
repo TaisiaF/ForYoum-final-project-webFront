@@ -1,0 +1,212 @@
+
+.discussion-page {
+    width: min(100% - 32px, 900px);
+    margin: 32px auto 56px;
+    color: var(--color-navy, #293F5E);
+}
+
+.discussion-page__loading,
+.discussion-page__not-found {
+    width: min(100% - 32px, 900px);
+    margin: 48px auto;
+    color: var(--color-text-muted, #71808D);
+}
+
+.discussion-post {
+    padding: 28px;
+    background: var(--color-white, #FCFCFA);
+    border: 1px solid var(--color-border, #DCE3E5);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(41, 63, 94, 0.035);
+}
+
+.discussion-post__header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.discussion-post__author {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    flex: 1;
+}
+
+.discussion-post__author-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.discussion-post__author-link {
+    width: fit-content;
+    padding: 0;
+    text-align: left;
+    border: none;
+    background: transparent;
+    color: #00d0ff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+    transition: color 150ms ease;
+}
+
+.discussion-post__author-link:hover {
+    color: #d000ff;
+}
+
+.discussion-post__date {
+    color: var(--color-text-muted, #71808D);
+    font-size: 0.82rem;
+}
+
+.discussion-post__category {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #DDEFF2;
+    color: #34788B;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.discussion-post__title {
+    margin: 0 0 20px;
+    color: var(--color-navy, #293F5E);
+    font-size: clamp(1.65rem, 4vw, 2.2rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.discussion-post__image {
+    display: block;
+    max-width: 100%;
+    max-height: 600px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin: 20px auto;
+    border-radius: 12px;
+}
+
+.discussion-post__content {
+    margin: 0;
+    color: var(--color-navy, #293F5E);
+    font-size: 1rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.discussion-post__footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--color-border, #DCE3E5);
+}
+
+.discussion-post__like-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-right: auto;
+    color: var(--color-navy, #293F5E);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.discussion-post__heart {
+    color: var(--color-coral, #D98783);
+    font-size: 1.15rem;
+}
+
+.discussion-post__bookmark {
+    padding: 9px 14px;
+    border: 1px solid var(--color-border, #DCE3E5);
+    border-radius: 9px;
+    background: var(--color-white, #FCFCFA);
+    color: var(--color-navy, #293F5E);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.discussion-post__bookmark:hover:not(:disabled) {
+    border-color: var(--color-sea-glass, #70B9CA);
+    background: var(--color-mist, #F2F4F4);
+}
+
+.discussion-post__bookmark:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.discussion-post__bookmark--active {
+    border-color: var(--color-sea-glass, #70B9CA);
+    background: #E5F2F4;
+    color: #34788B;
+}
+
+.discussion-post__edit-form {
+    margin-bottom: 20px;
+}
+
+.discussion-replies {
+    margin-top: 34px;
+}
+
+.discussion-replies__title {
+    margin: 0 0 20px;
+    color: var(--color-navy, #293F5E);
+    font-size: 1.45rem;
+}
+
+.discussion-replies__composer {
+    margin-bottom: 28px;
+}
+
+.discussion-page button:focus-visible {
+    outline: 3px solid var(--color-sea-glass, #70B9CA);
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .discussion-page {
+        width: min(100% - 20px, 900px);
+        margin-top: 20px;
+    }
+
+    .discussion-post {
+        padding: 18px;
+        border-radius: 12px;
+    }
+
+    .discussion-post__header {
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .discussion-post__category {
+        margin-left: 50px;
+    }
+
+    .discussion-post__footer {
+        gap: 8px;
+    }
+
+    .discussion-replies {
+        margin-top: 28px;
+    }
+}

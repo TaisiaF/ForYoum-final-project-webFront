@@ -28,6 +28,15 @@ const updateProfilePrivacy = async (isPrivate) => {
 };
 
 
+const updateDescription = async (description) => {
+    const response = await api.patch("/users/me/description", {
+        description
+    });
+
+    return response.data;
+};
+
+
 const getUserDiscussions = async (id) => {
     const response = await api.get(
         `/users/${id}/discussions`
@@ -102,12 +111,13 @@ export default {
     getUserById,
     getMe,
     getMyBookmarks,
-    updateProfilePrivacy,
     getUserDiscussions,
     updateProfilePicture,
     updateUsername,
     updateEmail,
     updatePassword,
+    updateDescription,
+    updateProfilePrivacy,
     banUser,
     unbanUser,
     deleteUserById,

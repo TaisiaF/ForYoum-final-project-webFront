@@ -6,261 +6,244 @@ import Button from "../components/Button";
 import DiscussionCard from "../components/DiscussionCard";
 
 import discussionService from "../services/discussionService";
-
 import { useAuth } from "../context/AuthContext";
+import "./Home.css";
 
+
+const categories = [
+    "Gaming",
+    "Movies",
+    "Music",
+    "Sports",
+    "Food",
+    "Education",
+    "Art",
+    "Other",
+];
 
 export default function Home() {
 
     const navigate = useNavigate();
+    const { user } = useAuth();
 
-    const { user, logout } = useAuth();
+    const [discussions, setDiscussions] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
-    const [discussions, setDiscussions] =
-        useState([]);
+    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState("");
+    const [sort, setSort] = useState("newest");
+    const [after, setAfter] = useState("");
+    const [before, setBefore] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const [page, setPage] =
-        useState(1);
-
-    const [totalPages, setTotalPages] =
-        useState(1);
-
-    const [search, setSearch] =
-        useState("");
-
-    const [category, setCategory] =
-        useState("");
-
-    const [sort, setSort] =
-        useState("newest");
-
-    const [after, setAfter] =
-        useState("");
-
-    const [before, setBefore] =
-        useState("");
-
-    const [loading, setLoading] =
-        useState(false);
-
-    const loadDiscussions = async (
-        pageNumber = 1
-    ) => {
-
+    const loadDiscussions = async (pageNumber = 1) => {
         try {
-
             setLoading(true);
 
-            const response =
-                await discussionService
-                    .getDiscussions({
-                        page: pageNumber,
-                        category,
-                        search,
-                        sort,
-                        after,
-                        before
-                    });
+            const response = await discussionService.getDiscussions({
+                page: pageNumber,
+                category,
+                search,
+                sort,
+                after,
+                before,
+            });
 
             setDiscussions(response.data);
-
-            setTotalPages(
-                response.totalPages
-            );
-
+            setTotalPages(response.totalPages);
             setPage(pageNumber);
-
         } catch (error) {
-
-            console.log(
-                "LOAD DISCUSSIONS ERROR",
-                error
-            );
-
+            console.error("LOAD DISCUSSIONS ERROR", error);
         } finally {
-
             setLoading(false);
         }
     };
 
     useEffect(() => {
         loadDiscussions(1);
-    }, [
-        category,
-        sort,
-        after,
-        before
-    ]);
+    }, [category, sort, after, before]);
+
+    const handleSearch = (event) => {
+        event.preventDefault();
+        loadDiscussions(1);
+    };
 
     return (
-        <div>
+        <main className="home-page">
+            <section className="home-hero">
+                <h1>Home Page</h1>
+                <p>
+                    Discover ideas, share your interests, and join the
+                    discussion.
+                </p>
+            </section>
 
-            <h1>ForYoum -Home</h1>
-            
             {user && (
-                <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-
-                    <Button
-                        onClick={() => navigate(`/profile/${user.id}`)}
-                    >
-                        My Profile
-                    </Button>
-
+                <div className="home-create-action">
                     <Button
                         onClick={() => navigate("/discussion/create")}
                     >
-                        Create Discussion
+                        + Create Discussion
                     </Button>
                 </div>
             )}
 
-            <Input
-                label="Search"
-                value={search}
-                placeholder="Search discussions"
-                onChange={(event) =>
-                    setSearch(event.target.value)
-                }
-            />
+            <form className="home-search" onSubmit={handleSearch}>
+                <label
+                    className="visually-hidden"
+                    htmlFor="discussion-search"
+                >
+                    Search discussions
+                </label>
 
-            <Button
-                onClick={() =>
-                    loadDiscussions(1)
-                }
-                loading={loading}
-            >
-                Search
-            </Button>
-
-            <select
-                value={category}
-                onChange={(event) =>
-                    setCategory(event.target.value)
-                }
-            >
-                <option value="">
-                    All
-                </option>
-
-                <option value="Gaming">
-                    Gaming
-                </option>
-
-                <option value="Movies">
-                    Movies
-                </option>
-
-                <option value="Music">
-                    Music
-                </option>
-
-                <option value="Sports">
-                    Sports
-                </option>
-
-                <option value="Food">
-                    Food
-                </option>
-
-                <option value="Education">
-                    Education
-                </option>
-
-                <option value="Art">
-                    Art
-                </option>
-
-                <option value="Other">
-                    Other
-                </option>
-            </select>
-
-            <select
-                value={sort}
-                onChange={(event) =>
-                    setSort(event.target.value)
-                }
-            >
-                <option value="newest">
-                    Newest
-                </option>
-
-                <option value="oldest">
-                    Oldest
-                </option>
-
-                <option value="likes">
-                    Most Liked
-                </option>
-            </select>
-
-            <label>
-                From
-                <input
-                    type="date"
-                    value={after}
-                    onChange={(event) =>
-                        setAfter(event.target.value)
-                    }
+                <Input
+                    label=""
+                    value={search}
+                    placeholder="Search discussions..."
+                    onChange={(event) => setSearch(event.target.value)}
+                    id="discussion-search"
                 />
-            </label>
 
-            <label>
-                To
-                <input
-                    type="date"
-                    value={before}
-                    onChange={(event) =>
-                        setBefore(event.target.value)
-                    }
-                />
-            </label>
+                <Button type="submit" loading={loading}>
+                    Search
+                </Button>
+            </form>
 
-            {loading && (
-                <p>Loading...</p>
-            )}
+            <section className="home-categories">
+                <h2 className="home-section-label">
+                    Explore categories
+                </h2>
 
-            {!loading &&
-                discussions.length === 0 && (
-                    <p>
-                        No discussions found.
+                <div className="category-chips">
+                    <button
+                        type="button"
+                        className={`category-chip category-chip--all ${
+                            category === "" ? "is-active" : ""
+                        }`}
+                        aria-pressed={category === ""}
+                        onClick={() => setCategory("")}
+                    >
+                        All topics
+                    </button>
+
+                    {categories.map((item) => (
+                        <button
+                            key={item}
+                            type="button"
+                            className={`category-chip category-chip--${item.toLowerCase()} ${
+                                category === item ? "is-active" : ""
+                            }`}
+                            aria-pressed={category === item}
+                            onClick={() => setCategory(item)}
+                        >
+                            {item}
+                        </button>
+                    ))}
+                </div>
+            </section>
+
+            <section className="home-discussions">
+                <div className="home-discussions__heading">
+                    <div>
+                        <h2>Filter discussions</h2>
+                    </div>
+                </div>
+
+                <div className="home-filters">
+                    <label className="home-filter">
+                        <span>Sort by</span>
+                        <select
+                            value={sort}
+                            onChange={(event) => setSort(event.target.value)}
+                        >
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                            <option value="likes">Most liked</option>
+                        </select>
+                    </label>
+
+                    <label className="home-filter">
+                        <span>From</span>
+                        <input
+                            type="date"
+                            value={after}
+                            onChange={(event) => setAfter(event.target.value)}
+                        />
+                    </label>
+
+                    <label className="home-filter">
+                        <span>To</span>
+                        <input
+                            type="date"
+                            value={before}
+                            onChange={(event) => setBefore(event.target.value)}
+                        />
+                    </label>
+                </div>
+
+                {loading && (
+                    <p className="home-status" role="status">
+                        Loading discussions...
                     </p>
                 )}
 
-           {!loading &&
-                discussions.map((discussion) => (
-                    <DiscussionCard
-                        key={discussion._id}
-                        discussion={discussion}
-                    />
-    ))}
+                {!loading && discussions.length === 0 && (
+                    <div className="home-empty">
+                        <span className="home-empty__icon" aria-hidden="true">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.7"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />
+                            </svg>
+                        </span>
+                        <h3>No discussions found</h3>
+                        <p>
+                            Try another search or category to find a
+                            conversation.
+                        </p>
+                    </div>
+                )}
 
-            <div>
+                {!loading && discussions.length > 0 && (
+                    <div className="home-discussion-list">
+                        {discussions.map((discussion) => (
+                            <DiscussionCard
+                                key={discussion._id}
+                                discussion={discussion}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                <Button
-                    onClick={() =>
-                        loadDiscussions(page - 1)
-                    }
-                    loading={loading}
-                >
-                    Previous
-                </Button>
+                <nav className="home-pagination" aria-label="Discussion pages">
+                    <Button
+                        onClick={() => loadDiscussions(page - 1)}
+                        loading={loading}
+                        disabled={loading || page <= 1}
+                    >
+                        ← Previous
+                    </Button>
 
-                <span>
-                    Page {page} of {totalPages}
-                </span>
+                    <span>
+                        Page <strong>{page}</strong> of{" "}
+                        <strong>{totalPages}</strong>
+                    </span>
 
-                <Button
-                    onClick={() =>
-                        loadDiscussions(page + 1)
-                    }
-                    loading={loading}
-                >
-                    Next
-                </Button>
-
-            </div>
-
-        </div>
+                    <Button
+                        onClick={() => loadDiscussions(page + 1)}
+                        loading={loading}
+                        disabled={loading || page >= totalPages}
+                    >
+                        Next →
+                    </Button>
+                </nav>
+            </section>
+        </main>
     );
 }

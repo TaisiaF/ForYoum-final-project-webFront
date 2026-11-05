@@ -5,7 +5,8 @@ import { useAuth } from "../context/AuthContext";
 import replyService from "../services/replyService";
 import ReplyComposer from "./ReplyComposer";
 import ProfilePicture from "./ProfilePicture";
-
+import Button from "./Button";
+import "./ReplyCard.css";
 
 export default function ReplyCard({
     reply,
@@ -16,17 +17,10 @@ export default function ReplyCard({
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const [isEditing, setIsEditing] =
-        useState(false);
-
-    const [editContent, setEditContent] =
-        useState(reply.content);
-
-    const [isReplying, setIsReplying] =
-        useState(false);
-
-    const [replyContent, setReplyContent] =
-        useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(reply.content);
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyContent, setReplyContent] = useState("");
 
     const handleReplyClick = () => {
         if (!user) {
@@ -43,194 +37,156 @@ export default function ReplyCard({
     };
 
     const handleSubmitReply = async () => {
-        if (!replyContent.trim()) {
-            return;
-        }
+        if (!replyContent.trim()) return;
 
         try {
-            await onCreateReply(
-                reply._id,
-                replyContent.trim()
-            );
-
+            await onCreateReply(reply._id, replyContent.trim());
             setReplyContent("");
             setIsReplying(false);
-
         } catch (error) {
-            console.log(
-                "CREATE REPLY ERROR",
-                error
-            );
+            console.log("CREATE REPLY ERROR", error);
         }
     };
 
+    const handleSaveEdit = async () => {
+        if (!editContent.trim()) return;
+
+        try {
+            await replyService.updateReply(
+                reply._id,
+                editContent.trim()
+            );
+            await onUpdate();
+            setIsEditing(false);
+        } catch (error) {
+            console.log("UPDATE REPLY ERROR", error);
+        }
+    };
+
+    const handleDelete = async () => {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this reply?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await replyService.deleteReply(reply._id);
+            await onUpdate();
+        } catch (error) {
+            console.log("DELETE REPLY ERROR", error);
+        }
+    };
+
+    const canManageReply =
+        user &&
+        (user.id === reply.authorId?._id || user.role === "admin");
 
     return (
-        <div
-            style={{
-                position: "relative",
-                paddingBottom: "0"
-            }}
-        >
-
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px"
-                }}
-            >
+        <div className="reply-card">
+            <div className="reply-card__header">
                 <ProfilePicture
                     src={reply.authorId?.profilePicture}
                     alt={`${reply.authorId?.username || "User"}'s profile picture`}
                     size={40}
                 />
-                
-                <p>
+
+                <div className="reply-card__author">
                     {reply.authorId?._id ? (
                         <button
                             type="button"
+                            className="reply-card__author-link"
                             onClick={() =>
                                 navigate(`/profile/${reply.authorId._id}`)
                             }
-                            style={{
-                                background: "none",
-                                border: "none",
-                                padding: 0,
-                                color: "blue",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                                font: "inherit"
-                            }}
                         >
                             {reply.authorId.username}
                         </button>
                     ) : (
-                        "Unknown user"
+                        <span className="reply-card__unknown-author">
+                            Unknown user
+                        </span>
                     )}
-                </p>
+                </div>
             </div>
 
-
             {isEditing ? (
-                <div>
+                <div className="reply-card__edit">
+                    <label
+                        className="reply-card__edit-label"
+                        htmlFor={`edit-reply-${reply._id}`}
+                    >
+                        Edit reply
+                    </label>
+
                     <textarea
                         id={`edit-reply-${reply._id}`}
+                        className="reply-card__edit-textarea"
                         value={editContent}
                         onChange={(event) =>
                             setEditContent(event.target.value)
                         }
+                        rows={4}
                     />
 
-                    <button
-                        onClick={() =>
-                            setIsEditing(false)
-                        }
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        onClick={async () => {
-                            if (!editContent.trim()) {
-                                return;
-                            }
-
-                            try {
-                                await replyService.updateReply(
-                                    reply._id,
-                                    editContent.trim()
-                                );
-
-                                await onUpdate();
-
+                    <div className="reply-card__edit-actions">
+                        <Button onClick={handleSaveEdit}>
+                            Save
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setEditContent(reply.content);
                                 setIsEditing(false);
-
-                            } catch (error) {
-                                console.log(
-                                    "UPDATE REPLY ERROR",
-                                    error
-                                );
-                            }
-                        }}
-                    >
-                        Save
-                    </button>
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
                 </div>
             ) : (
-                <p>
+                <p className="reply-card__content">
                     {reply.content}
                 </p>
             )}
 
+            <div className="reply-card__metadata">
+                <span>
+                    {new Date(reply.createdAt).toLocaleDateString()}
+                </span>
+                <span className="reply-card__metadata-separator">
+                    ·
+                </span>
+                <span>Likes: {reply.likedByCount}</span>
+            </div>
 
-            <p>
-                {new Date(
-                    reply.createdAt
-                ).toLocaleDateString()}
-            </p>
+            <div className="reply-card__actions">
+                <Button variant="secondary" onClick={handleReplyClick}>
+                    Reply
+                </Button>
 
-            <p>
-                Likes: {reply.likedByCount}
-            </p>
+                <Button variant="secondary" onClick={() => onLike(reply)}>
+                    {reply.likedBy?.includes(user?.id) ? "Unlike" : "Like"}
+                </Button>
 
-            <button
-                onClick={handleReplyClick}
-            >
-                Reply
-            </button>
-
-            <button
-                onClick={() => onLike(reply)}
-            >
-                Like
-            </button>
-
-
-            {user && (user.id === reply.authorId?._id || user.role === "admin") && (
+                {canManageReply && (
                     <>
-                        <button
+                        <Button
+                            variant="outline"
                             onClick={() => {
-                                setEditContent(
-                                    reply.content
-                                );
+                                setEditContent(reply.content);
                                 setIsEditing(true);
                             }}
                         >
                             Edit
-                        </button>
+                        </Button>
 
-                        <button
-                            onClick={async () => {
-                                const confirmed =
-                                    window.confirm(
-                                        "Are you sure you want to delete this reply?"
-                                    );
-
-                                if (!confirmed) {
-                                    return;
-                                }
-
-                                try {
-                                    await replyService.deleteReply(
-                                        reply._id
-                                    );
-
-                                    await onUpdate();
-
-                                } catch (error) {
-                                    console.log(
-                                        "DELETE REPLY ERROR",
-                                        error
-                                    );
-                                }
-                            }}
-                        >
+                        <Button variant="danger" onClick={handleDelete}>
                             Delete
-                        </button>
-                    </>)
-            }
-
+                        </Button>
+                    </>
+                )}
+            </div>
 
             {isReplying && (
                 <ReplyComposer

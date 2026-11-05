@@ -8,6 +8,8 @@ import Button from "../components/Button";
 import { useAuth } from "../context/AuthContext";
 import authService from "../services/authService";
 
+import "./Login.css";
+
 export default function Login() {
     const navigate = useNavigate();
 
@@ -24,10 +26,10 @@ export default function Login() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = async () => {
+    const handleLogin = async (event) => {
+        event?.preventDefault();
         setError("");
 
-        // Only check whether the fields are empty.
         const usernameValidation =
             username.trim() === ""
                 ? "Username is required."
@@ -68,66 +70,95 @@ export default function Login() {
     };
 
     return (
-        <div>
-            <h1>Login</h1>
+        <main className="login-page">
+            <section className="login-card">
+                <header className="login-header">
+                    <span className="login-eyebrow">
+                        WELCOME BACK
+                    </span>
 
-            <Input
-                label="Username"
-                value={username}
-                placeholder="Enter username"
-                onChange={(event) => {
-                    const value = event.target.value;
-                    setUsername(value);
+                    <h1>Log in to ForYoum</h1>
 
-                    setUsernameError(
-                        value.trim() === ""
-                            ? "Username is required."
-                            : ""
-                    );
-                }}
-                error={usernameError}
-                success={
-                    username.trim().length > 0 &&
-                    !usernameError
-                }
-            />
+                </header>
 
-            <Input
-                label="Password"
-                value={password}
-                placeholder="Enter password"
-                type="password"
-                onChange={(event) => {
-                    const value = event.target.value;
-                    setPassword(value);
+                <form
+                    className="login-form"
+                    onSubmit={handleLogin}
+                >
+                    <Input
+                        label="Username"
+                        value={username}
+                        placeholder="Enter username"
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setUsername(value);
 
-                    setPasswordError(
-                        value === ""
-                            ? "Password is required."
-                            : ""
-                    );
-                }}
-                error={passwordError}
-                success={
-                    password.length > 0 &&
-                    !passwordError
-                }
-            />
+                            setUsernameError(
+                                value.trim() === ""
+                                    ? "Username is required."
+                                    : ""
+                            );
+                        }}
+                        error={usernameError}
+                        success={
+                            username.trim().length > 0 &&
+                            !usernameError
+                        }
+                    />
 
-            {error && <p>{error}</p>}
+                    <Input
+                        label="Password"
+                        value={password}
+                        placeholder="Enter password"
+                        type="password"
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setPassword(value);
 
-            <Button
-                onClick={handleLogin}
-                loading={loading}
-            >
-                Login
-            </Button>
+                            setPasswordError(
+                                value === ""
+                                    ? "Password is required."
+                                    : ""
+                            );
+                        }}
+                        error={passwordError}
+                        success={
+                            password.length > 0 &&
+                            !passwordError
+                        }
+                    />
 
-            <p
-                onClick={() => navigate("/auth/register")}
-            >
-                Don't have an account? Register
-            </p>
-        </div>
+                    {error && (
+                        <div
+                            className="login-error"
+                            role="alert"
+                        >
+                            {error}
+                        </div>
+                    )}
+
+                    <Button
+                        type="submit"
+                        loading={loading}
+                        className="login-submit"
+                    >
+                        Log In
+                    </Button>
+                </form>
+
+                <footer className="login-footer">
+                    <span>New to ForYoum?</span>
+
+                    <button
+                        type="button"
+                        className="login-register-link"
+                        onClick={() => navigate("/auth/register")}
+                    >
+                        Create an account
+                    </button>
+                </footer>
+            </section>
+
+        </main>
     );
 }

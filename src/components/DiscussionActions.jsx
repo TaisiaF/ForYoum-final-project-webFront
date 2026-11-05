@@ -1,4 +1,7 @@
+
 import { useAuth } from "../context/AuthContext";
+import Button from "./Button";
+import "./DiscussionActions.css";
 
 export default function DiscussionActions({
     discussion,
@@ -15,25 +18,34 @@ export default function DiscussionActions({
     const canManage =
         user &&
         (
-            user.id === discussion.authorId._id ||
+            user.id === discussion.authorId?._id ||
             user.role === "admin"
         );
 
     return (
-        <div>
-            <button onClick={onLike}>
+        <div className="discussion-actions">
+            <Button
+                variant={isLiked ? "secondary" : "primary"}
+                onClick={onLike}
+            >
                 {isLiked ? "Unlike" : "Like"}
-            </button>
+            </Button>
 
             {canManage && (
                 <>
-                    <button onClick={onEdit}>
+                    <Button
+                        variant="outline"
+                        onClick={onEdit}
+                    >
                         Edit
-                    </button>
+                    </Button>
 
-                    <button onClick={onDelete}>
+                    <Button
+                        variant="danger"
+                        onClick={onDelete}
+                    >
                         Delete
-                    </button>
+                    </Button>
                 </>
             )}
         </div>
